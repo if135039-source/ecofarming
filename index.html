@@ -1294,7 +1294,7 @@ canvas{
 }
 
 
-/* GRAFIK PENJUALAN TERBARU */
+/* GRAFIK PENJUALAN TANAMAN BERDASARKAN MUSIM & WILAYAH */
 .sales-chart-card{
     margin-top:22px;
     overflow:hidden;
@@ -1305,7 +1305,7 @@ canvas{
     justify-content:space-between;
     align-items:flex-start;
     gap:15px;
-    margin-bottom:20px;
+    margin-bottom:18px;
 }
 
 .sales-chart-head h3{
@@ -1316,6 +1316,7 @@ canvas{
 .sales-chart-head p{
     color:var(--muted);
     font-size:12px;
+    line-height:1.6;
 }
 
 .sales-total{
@@ -1328,23 +1329,44 @@ canvas{
     white-space:nowrap;
 }
 
+.sales-filters{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-bottom:18px;
+}
+
+.sales-filter label{
+    display:block;
+    margin-bottom:6px;
+    font-size:11px;
+    font-weight:800;
+    color:var(--muted);
+}
+
+.sales-filter select{
+    padding:11px 12px;
+    border-radius:12px;
+    font-size:12px;
+}
+
 .sales-chart{
-    height:245px;
+    min-height:280px;
     display:flex;
     align-items:flex-end;
     justify-content:space-around;
-    gap:12px;
-    padding:18px 10px 0;
+    gap:14px;
+    padding:20px 12px 0;
     border-bottom:2px solid #dfece4;
     background:
         linear-gradient(to top,rgba(25,135,84,.035) 1px,transparent 1px);
-    background-size:100% 48px;
+    background-size:100% 52px;
 }
 
-.sales-day{
+.sales-season{
     height:100%;
     flex:1;
-    max-width:90px;
+    min-width:0;
     display:flex;
     flex-direction:column;
     justify-content:flex-end;
@@ -1356,18 +1378,19 @@ canvas{
     font-size:11px;
     font-weight:800;
     color:var(--green-dark);
+    text-align:center;
 }
 
 .sales-bar-wrap{
     width:100%;
-    height:175px;
+    height:190px;
     display:flex;
     align-items:flex-end;
     justify-content:center;
 }
 
 .sales-bar{
-    width:min(42px,70%);
+    width:min(58px,72%);
     min-height:8px;
     background:linear-gradient(180deg,#49b878,#198754);
     border-radius:10px 10px 3px 3px;
@@ -1375,7 +1398,7 @@ canvas{
     transition:.3s ease;
 }
 
-.sales-day:hover .sales-bar{
+.sales-season:hover .sales-bar{
     transform:translateY(-5px);
     filter:brightness(1.05);
 }
@@ -1384,6 +1407,7 @@ canvas{
     font-size:11px;
     color:var(--muted);
     font-weight:700;
+    text-align:center;
 }
 
 .sales-caption{
@@ -1393,26 +1417,57 @@ canvas{
     margin-top:14px;
     font-size:11px;
     color:var(--muted);
+    line-height:1.5;
 }
 
 .sales-caption strong{
     color:var(--green);
 }
 
+.sales-region-summary{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-top:16px;
+}
+
+.region-mini{
+    background:#f5faf7;
+    border:1px solid #e0eee5;
+    border-radius:13px;
+    padding:11px;
+}
+
+.region-mini b{
+    display:block;
+    font-size:11px;
+    margin-bottom:4px;
+}
+
+.region-mini span{
+    font-size:12px;
+    color:var(--green-dark);
+    font-weight:900;
+}
+
 @media(max-width:650px){
+    .sales-filters{
+        grid-template-columns:1fr;
+    }
+
     .sales-chart{
-        height:215px;
-        gap:5px;
+        min-height:245px;
+        gap:6px;
         padding-left:3px;
         padding-right:3px;
     }
 
     .sales-bar-wrap{
-        height:150px;
+        height:155px;
     }
 
     .sales-bar{
-        width:28px;
+        width:32px;
     }
 
     .sales-total{
@@ -1422,6 +1477,10 @@ canvas{
 
     .sales-chart-head{
         flex-direction:column;
+    }
+
+    .sales-region-summary{
+        grid-template-columns:1fr;
     }
 }
 
@@ -1724,87 +1783,71 @@ Gunakan Eco Coin untuk menukar reward
 
 
 <div class="section-title">
-<h2>📈 Grafik Penjualan Terbaru</h2>
-<span>7 hari terakhir</span>
+<h2>📈 Grafik Penjualan Tanaman</h2>
+<span>Musim • wilayah • komoditas</span>
 </div>
 
 <div class="card sales-chart-card">
 
     <div class="sales-chart-head">
         <div>
-            <h3>Tren Penjualan Produk</h3>
-            <p>Perkembangan jumlah produk terjual dalam 7 hari terakhir.</p>
+            <h3>Penjualan Tanaman Berdasarkan Musim</h3>
+            <p>
+                Bandingkan jumlah tanaman terjual pada beberapa musim
+                di berbagai wilayah Indonesia. Data yang ditampilkan
+                adalah data contoh/simulasi untuk dashboard.
+            </p>
         </div>
 
-        <div class="sales-total">
-            Total: 140 produk
+        <div class="sales-total" id="salesTotal">
+            Total: 0 tanaman
         </div>
     </div>
 
-    <div class="sales-chart">
+    <div class="sales-filters">
 
-        <div class="sales-day">
-            <div class="sales-value">12</div>
-            <div class="sales-bar-wrap">
-                <div class="sales-bar" style="height:43%"></div>
-            </div>
-            <div class="sales-label">Sen</div>
+        <div class="sales-filter">
+            <label for="salesPlant">🌱 Pilih tanaman</label>
+            <select id="salesPlant" onchange="updateSalesChart()">
+                <option value="Padi">Padi</option>
+                <option value="Jagung">Jagung</option>
+                <option value="Cabai">Cabai</option>
+                <option value="Kedelai">Kedelai</option>
+                <option value="Bawang Merah">Bawang Merah</option>
+                <option value="Tomat">Tomat</option>
+                <option value="Kentang">Kentang</option>
+                <option value="Mentimun">Mentimun</option>
+                <option value="Semangka">Semangka</option>
+            </select>
         </div>
 
-        <div class="sales-day">
-            <div class="sales-value">18</div>
-            <div class="sales-bar-wrap">
-                <div class="sales-bar" style="height:64%"></div>
-            </div>
-            <div class="sales-label">Sel</div>
-        </div>
-
-        <div class="sales-day">
-            <div class="sales-value">15</div>
-            <div class="sales-bar-wrap">
-                <div class="sales-bar" style="height:54%"></div>
-            </div>
-            <div class="sales-label">Rab</div>
-        </div>
-
-        <div class="sales-day">
-            <div class="sales-value">25</div>
-            <div class="sales-bar-wrap">
-                <div class="sales-bar" style="height:89%"></div>
-            </div>
-            <div class="sales-label">Kam</div>
-        </div>
-
-        <div class="sales-day">
-            <div class="sales-value">22</div>
-            <div class="sales-bar-wrap">
-                <div class="sales-bar" style="height:79%"></div>
-            </div>
-            <div class="sales-label">Jum</div>
-        </div>
-
-        <div class="sales-day">
-            <div class="sales-value">30</div>
-            <div class="sales-bar-wrap">
-                <div class="sales-bar" style="height:100%"></div>
-            </div>
-            <div class="sales-label">Sab</div>
-        </div>
-
-        <div class="sales-day">
-            <div class="sales-value">18</div>
-            <div class="sales-bar-wrap">
-                <div class="sales-bar" style="height:64%"></div>
-            </div>
-            <div class="sales-label">Min</div>
+        <div class="sales-filter">
+            <label for="salesRegion">📍 Pilih wilayah</label>
+            <select id="salesRegion" onchange="updateSalesChart()">
+                <option value="Semua Wilayah">Semua Wilayah</option>
+                <option value="Sumatra">Sumatra</option>
+                <option value="Jawa">Jawa</option>
+                <option value="Bali & Nusa Tenggara">Bali & Nusa Tenggara</option>
+                <option value="Kalimantan">Kalimantan</option>
+                <option value="Sulawesi">Sulawesi</option>
+                <option value="Maluku & Papua">Maluku & Papua</option>
+            </select>
         </div>
 
     </div>
+
+    <div class="sales-chart" id="salesChart"></div>
 
     <div class="sales-caption">
-        <span>📊 Data penjualan contoh untuk tampilan dashboard</span>
-        <strong>Penjualan tertinggi: 30 produk</strong>
+        <span id="salesCaption">
+            📊 Menampilkan simulasi penjualan Padi di semua wilayah.
+        </span>
+        <strong id="salesHighest">
+            Musim tertinggi: -
+        </strong>
     </div>
+
+    <div class="sales-region-summary" id="salesRegionSummary"></div>
 
 </div>
 
@@ -4906,7 +4949,167 @@ function getAIResponse(question){
 
 }
 
+
+/* ================================
+   GRAFIK PENJUALAN TANAMAN
+   MUSIM & WILAYAH
+================================ */
+
+const salesSeasons = [
+    "Musim Hujan",
+    "Musim Kemarau",
+    "Pancaroba Awal",
+    "Pancaroba Akhir"
+];
+
+const salesRegions = [
+    "Sumatra",
+    "Jawa",
+    "Bali & Nusa Tenggara",
+    "Kalimantan",
+    "Sulawesi",
+    "Maluku & Papua"
+];
+
+/*
+   Angka berikut adalah DATA CONTOH/SIMULASI.
+   Tujuannya untuk membuat grafik interaktif berdasarkan
+   tanaman, musim, dan wilayah.
+*/
+const salesBase = {
+    "Padi":  { "Musim Hujan": 82, "Musim Kemarau": 96, "Pancaroba Awal": 72, "Pancaroba Akhir": 68 },
+    "Jagung": { "Musim Hujan": 74, "Musim Kemarau": 91, "Pancaroba Awal": 78, "Pancaroba Akhir": 70 },
+    "Cabai": { "Musim Hujan": 58, "Musim Kemarau": 88, "Pancaroba Awal": 76, "Pancaroba Akhir": 64 },
+    "Kedelai": { "Musim Hujan": 61, "Musim Kemarau": 79, "Pancaroba Awal": 69, "Pancaroba Akhir": 63 },
+    "Bawang Merah": { "Musim Hujan": 55, "Musim Kemarau": 86, "Pancaroba Awal": 71, "Pancaroba Akhir": 60 },
+    "Tomat": { "Musim Hujan": 68, "Musim Kemarau": 81, "Pancaroba Awal": 73, "Pancaroba Akhir": 65 },
+    "Kentang": { "Musim Hujan": 63, "Musim Kemarau": 77, "Pancaroba Awal": 70, "Pancaroba Akhir": 66 },
+    "Mentimun": { "Musim Hujan": 72, "Musim Kemarau": 84, "Pancaroba Awal": 75, "Pancaroba Akhir": 69 },
+    "Semangka": { "Musim Hujan": 57, "Musim Kemarau": 93, "Pancaroba Awal": 74, "Pancaroba Akhir": 61 }
+};
+
+const salesRegionFactor = {
+    "Sumatra": 1.08,
+    "Jawa": 1.22,
+    "Bali & Nusa Tenggara": 0.92,
+    "Kalimantan": 0.86,
+    "Sulawesi": 0.98,
+    "Maluku & Papua": 0.72
+};
+
+const salesSeasonFactor = {
+    "Musim Hujan": 1.00,
+    "Musim Kemarau": 1.00,
+    "Pancaroba Awal": 1.00,
+    "Pancaroba Akhir": 1.00
+};
+
+function getSalesValue(plant, region, season){
+    const base = salesBase[plant]?.[season] || 0;
+    const factor = region === "Semua Wilayah"
+        ? 1
+        : (salesRegionFactor[region] || 1);
+
+    return Math.round(base * factor * (salesSeasonFactor[season] || 1));
+}
+
+function getAllRegionSales(plant, season){
+    return salesRegions.reduce((total, region) => {
+        return total + getSalesValue(plant, region, season);
+    }, 0);
+}
+
+function updateSalesChart(){
+
+    const plantSelect = document.getElementById("salesPlant");
+    const regionSelect = document.getElementById("salesRegion");
+    const chart = document.getElementById("salesChart");
+    const totalEl = document.getElementById("salesTotal");
+    const captionEl = document.getElementById("salesCaption");
+    const highestEl = document.getElementById("salesHighest");
+    const summaryEl = document.getElementById("salesRegionSummary");
+
+    if(!plantSelect || !regionSelect || !chart) return;
+
+    const plant = plantSelect.value;
+    const region = regionSelect.value;
+
+    let values;
+
+    if(region === "Semua Wilayah"){
+        values = salesSeasons.map(season => ({
+            season,
+            value: getAllRegionSales(plant, season)
+        }));
+    }else{
+        values = salesSeasons.map(season => ({
+            season,
+            value: getSalesValue(plant, region, season)
+        }));
+    }
+
+    const maxValue = Math.max(...values.map(item => item.value), 1);
+    const total = values.reduce((sum, item) => sum + item.value, 0);
+    const highest = values.reduce((best, item) =>
+        item.value > best.value ? item : best
+    );
+
+    chart.innerHTML = values.map(item => {
+        const height = Math.max(8, (item.value / maxValue) * 100);
+
+        return `
+            <div class="sales-season">
+                <div class="sales-value">${item.value.toLocaleString("id-ID")}</div>
+                <div class="sales-bar-wrap">
+                    <div class="sales-bar" style="height:${height}%"></div>
+                </div>
+                <div class="sales-label">${item.season}</div>
+            </div>
+        `;
+    }).join("");
+
+    totalEl.textContent =
+        `Total: ${total.toLocaleString("id-ID")} tanaman`;
+
+    captionEl.textContent =
+        `📊 ${plant} • ${region} • data contoh/simulasi penjualan berdasarkan musim.`;
+
+    highestEl.textContent =
+        `Musim tertinggi: ${highest.season} (${highest.value.toLocaleString("id-ID")} tanaman)`;
+
+    if(region === "Semua Wilayah"){
+        summaryEl.innerHTML = salesRegions.map(regionName => {
+
+            const regionTotal = salesSeasons.reduce(
+                (sum, season) => sum + getSalesValue(plant, regionName, season),
+                0
+            );
+
+            return `
+                <div class="region-mini">
+                    <b>📍 ${regionName}</b>
+                    <span>${regionTotal.toLocaleString("id-ID")} tanaman</span>
+                </div>
+            `;
+        }).join("");
+    }else{
+        const regionValues = salesSeasons.map(season => ({
+            season,
+            value: getSalesValue(plant, region, season)
+        }));
+
+        summaryEl.innerHTML = regionValues.map(item => `
+            <div class="region-mini">
+                <b>🌱 ${item.season}</b>
+                <span>${item.value.toLocaleString("id-ID")} tanaman</span>
+            </div>
+        `).join("");
+    }
+}
+
+
 updateDashboard();
+updateSalesChart();
 
 document.getElementById("rewardModal")
 .addEventListener(
