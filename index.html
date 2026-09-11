@@ -1280,163 +1280,6 @@ canvas{
     transform:scale(.95);
 }
 
-/* E-VOUCHER REWARD */
-.voucher-box{
-    margin:18px auto;
-    padding:0;
-    border:0;
-    border-radius:24px;
-    background:#fff;
-    position:relative;
-    z-index:2;
-    overflow:hidden;
-    box-shadow:0 18px 45px rgba(17,100,61,.18);
-    border:1px solid #dcefe3;
-    text-align:left;
-}
-.evoucher-head{
-    padding:20px 20px 17px;
-    background:linear-gradient(135deg,#198754,#11643d);
-    color:#fff;
-    position:relative;
-    overflow:hidden;
-}
-.evoucher-head::after{
-    content:"🌱";
-    position:absolute;
-    right:16px;
-    top:7px;
-    font-size:65px;
-    opacity:.13;
-    transform:rotate(-12deg);
-}
-.evoucher-brand{
-    font-size:11px;
-    font-weight:900;
-    letter-spacing:1.4px;
-    opacity:.9;
-}
-.evoucher-title{
-    font-size:21px;
-    font-weight:900;
-    margin-top:6px;
-}
-.evoucher-subtitle{
-    font-size:11px;
-    margin-top:4px;
-    opacity:.82;
-}
-.evoucher-main{
-    padding:18px 20px 20px;
-    position:relative;
-}
-.evoucher-main::before,
-.evoucher-main::after{
-    content:"";
-    position:absolute;
-    width:22px;
-    height:22px;
-    border-radius:50%;
-    background:#eef8f1;
-    top:-11px;
-}
-.evoucher-main::before{left:-11px}
-.evoucher-main::after{right:-11px}
-.evoucher-row{
-    display:flex;
-    justify-content:space-between;
-    gap:14px;
-    margin-bottom:13px;
-}
-.evoucher-meta span{
-    display:block;
-    color:#7a8b82;
-    font-size:9px;
-    font-weight:800;
-    text-transform:uppercase;
-    letter-spacing:.8px;
-    margin-bottom:3px;
-}
-.evoucher-meta b{
-    display:block;
-    color:#183528;
-    font-size:13px;
-}
-.evoucher-code-wrap{
-    margin:14px 0;
-    padding:13px 10px;
-    border:2px dashed #198754;
-    border-radius:15px;
-    background:#f3fbf6;
-    text-align:center;
-}
-.voucher-label{
-    font-size:9px;
-    font-weight:900;
-    color:#6b7d73;
-    letter-spacing:1.3px;
-    margin-bottom:7px;
-}
-.voucher-code{
-    font-size:24px;
-    font-weight:950;
-    letter-spacing:3px;
-    color:#11643d;
-    word-break:break-all;
-}
-.voucher-info{
-    font-size:10px;
-    color:#6b7d73;
-    line-height:1.55;
-    margin-top:10px;
-    text-align:center;
-}
-.evoucher-tear{
-    height:1px;
-    border-top:2px dashed #d7e9dd;
-    margin:0 20px;
-}
-.evoucher-footer{
-    padding:13px 20px 17px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    background:#fbfefc;
-}
-.evoucher-valid{
-    font-size:9px;
-    color:#6b7d73;
-    line-height:1.45;
-}
-.evoucher-valid b{color:#11643d}
-.voucher-actions{
-    display:flex;
-    justify-content:center;
-    gap:7px;
-    flex-wrap:wrap;
-}
-.voucher-copy,
-.voucher-download{
-    padding:9px 12px;
-    border:0;
-    border-radius:10px;
-    color:#fff;
-    font-weight:800;
-    cursor:pointer;
-    font-size:11px;
-    transition:.2s;
-}
-.voucher-copy{background:#198754}
-.voucher-download{background:#11643d}
-.voucher-copy:hover,
-.voucher-download:hover{transform:translateY(-2px);filter:brightness(1.04)}
-@media(max-width:500px){
-    .evoucher-footer{flex-direction:column;align-items:stretch}
-    .voucher-actions button{flex:1}
-    .voucher-code{font-size:20px}
-}
-
 .footer{
     text-align:center;
     padding:25px;
@@ -1676,6 +1519,105 @@ canvas{
     .fertilizer-grid{
         grid-template-columns:1fr 1fr;
     }
+}
+
+
+/* E-VOUCHER DARI RIWAYAT PENUKARAN */
+.history-item.reward-clickable{
+    cursor:pointer;
+}
+.history-item.reward-clickable:hover{
+    border-color:var(--green);
+    box-shadow:0 10px 28px rgba(25,135,84,.12);
+}
+.history-voucher-hint{
+    display:inline-block;
+    margin-top:7px;
+    padding:5px 9px;
+    border-radius:10px;
+    background:var(--green-light);
+    color:var(--green-dark);
+    font-size:10px;
+    font-weight:800;
+}
+.voucher-modal{
+    position:fixed;
+    inset:0;
+    background:rgba(9,25,17,.68);
+    backdrop-filter:blur(6px);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:5000;
+    padding:18px;
+}
+.voucher-modal.show{display:flex;}
+.voucher-card{
+    width:min(470px,100%);
+    background:white;
+    border-radius:26px;
+    overflow:hidden;
+    box-shadow:0 25px 80px rgba(0,0,0,.28);
+    animation:pop .25s ease;
+}
+.voucher-head{
+    position:relative;
+    padding:22px 24px;
+    color:white;
+    background:linear-gradient(135deg,#198754,#11643d);
+    text-align:center;
+}
+.voucher-head .voucher-logo{font-size:34px;margin-bottom:5px;}
+.voucher-head h2{font-size:22px;margin-bottom:4px;}
+.voucher-head p{font-size:11px;opacity:.9;}
+.voucher-close{
+    position:absolute;
+    top:10px;
+    right:10px;
+    width:34px;
+    height:34px;
+    border:0;
+    border-radius:50%;
+    background:rgba(255,255,255,.18);
+    color:white;
+    font-size:20px;
+    cursor:pointer;
+}
+.voucher-body{padding:24px;}
+.voucher-reward{
+    text-align:center;
+    padding:18px;
+    border:2px dashed #bfe4ca;
+    border-radius:18px;
+    background:#f7fcf8;
+}
+.voucher-reward .voucher-icon{font-size:48px;margin-bottom:7px;}
+.voucher-reward h3{color:var(--green-dark);font-size:20px;margin-bottom:5px;}
+.voucher-reward p{color:var(--muted);font-size:12px;}
+.voucher-code-box{
+    margin:18px 0;
+    padding:15px;
+    border-radius:15px;
+    background:#fff7dc;
+    border:1px solid #f0d98c;
+    text-align:center;
+}
+.voucher-code-label{color:#8c6b12;font-size:10px;font-weight:800;letter-spacing:1px;}
+.voucher-code{margin-top:5px;font-size:24px;letter-spacing:3px;font-weight:900;color:#70540b;}
+.voucher-details{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:18px;
+}
+.voucher-detail{padding:11px;border-radius:13px;background:#f5faf7;}
+.voucher-detail span{display:block;color:var(--muted);font-size:10px;margin-bottom:4px;}
+.voucher-detail b{font-size:12px;color:var(--text);}
+.voucher-actions{display:flex;gap:9px;flex-wrap:wrap;}
+.voucher-actions .btn{flex:1;min-width:130px;}
+.voucher-note{margin-top:14px;text-align:center;color:var(--muted);font-size:10px;line-height:1.5;}
+@media(max-width:650px){
+    .voucher-details{grid-template-columns:1fr;}
 }
 
 @media(max-width:650px){
@@ -3175,6 +3117,54 @@ Tutup
 
 </div>
 
+
+<div class="voucher-modal" id="voucherModal">
+    <div class="voucher-card">
+        <div class="voucher-head">
+            <button class="voucher-close" onclick="closeVoucher()" aria-label="Tutup">×</button>
+            <div class="voucher-logo">🌱</div>
+            <h2>E-VOUCHER ECOFARMING</h2>
+            <p>Voucher reward hasil penukaran Eco Coin</p>
+        </div>
+        <div class="voucher-body">
+            <div class="voucher-reward">
+                <div class="voucher-icon" id="voucherIcon">🎁</div>
+                <h3 id="voucherRewardName">Pupuk Organik</h3>
+                <p>Voucher ini merupakan bukti penukaran reward EcoFarming.</p>
+            </div>
+            <div class="voucher-code-box">
+                <div class="voucher-code-label">KODE VOUCHER</div>
+                <div class="voucher-code" id="voucherCode">ECO-XXXXXX</div>
+            </div>
+            <div class="voucher-details">
+                <div class="voucher-detail">
+                    <span>👤 Pemilik</span>
+                    <b id="voucherOwner">Petani Eco</b>
+                </div>
+                <div class="voucher-detail">
+                    <span>🪙 Nilai Penukaran</span>
+                    <b id="voucherCost">100 Coin</b>
+                </div>
+                <div class="voucher-detail">
+                    <span>📅 Tanggal Penukaran</span>
+                    <b id="voucherDate">-</b>
+                </div>
+                <div class="voucher-detail">
+                    <span>✅ Status</span>
+                    <b style="color:var(--green)">Voucher Diperoleh</b>
+                </div>
+            </div>
+            <div class="voucher-actions">
+                <button class="btn btn-green" onclick="downloadVoucher()">⬇️ Unduh E-Voucher</button>
+                <button class="btn btn-light" onclick="closeVoucher()">Tutup</button>
+            </div>
+            <div class="voucher-note">
+                Tunjukkan kode voucher ini saat mengambil reward pupuk/kompos.
+            </div>
+        </div>
+    </div>
+</div>
+
 <div
 class="surprise-overlay"
 id="surpriseOverlay">
@@ -3203,48 +3193,6 @@ id="surpriseMessage">
 <div
 class="surprise-value"
 id="surpriseValue">
-</div>
-
-<div class="voucher-box" id="voucherBox" style="display:none;">
-    <div class="evoucher-head">
-        <div class="evoucher-brand">ECOFARMING • E-VOUCHER</div>
-        <div class="evoucher-title">Voucher Reward 🌱</div>
-        <div class="evoucher-subtitle">Tunjukkan atau simpan voucher ini saat mengambil reward.</div>
-    </div>
-
-    <div class="evoucher-main">
-        <div class="evoucher-row">
-            <div class="evoucher-meta">
-                <span>Reward</span>
-                <b id="voucherRewardName">Pupuk Organik</b>
-            </div>
-            <div class="evoucher-meta" style="text-align:right;">
-                <span>Nilai</span>
-                <b id="voucherCost">100 Eco Coin</b>
-            </div>
-        </div>
-
-        <div class="evoucher-code-wrap">
-            <div class="voucher-label">KODE VOUCHER</div>
-            <div class="voucher-code" id="voucherCode">ECO-XXXX-XXXX</div>
-            <div class="voucher-info" id="voucherInfo">
-                Gunakan voucher ini saat mengambil reward.
-            </div>
-        </div>
-    </div>
-
-    <div class="evoucher-tear"></div>
-
-    <div class="evoucher-footer">
-        <div class="evoucher-valid">
-            <span>Berlaku sampai</span><br>
-            <b id="voucherValidDate">-</b>
-        </div>
-        <div class="voucher-actions">
-            <button class="voucher-copy" id="copyVoucherBtn" onclick="copyVoucher()">📋 Salin</button>
-            <button class="voucher-download" id="downloadVoucherBtn" onclick="downloadVoucher()">⬇️ Unduh</button>
-        </div>
-    </div>
 </div>
 
 <button
@@ -3629,196 +3577,229 @@ function depositWaste(){
 
 }
 
-function generateVoucherCode(){
-    const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    let code="ECO-";
-    for(let i=0;i<4;i++) code+=chars[Math.floor(Math.random()*chars.length)];
-    code+="-";
-    for(let i=0;i<4;i++) code+=chars[Math.floor(Math.random()*chars.length)];
-    return code;
-}
-
 function exchangeReward(name,cost){
+
     if(user.coins < cost){
-        alert(`Eco Coin kamu belum cukup.\nDibutuhkan: ${cost} Coin\nCoin kamu: ${user.coins}`);
+
+        alert(
+            `Eco Coin kamu belum cukup.\n` +
+            `Dibutuhkan: ${cost} Coin\n` +
+            `Coin kamu: ${user.coins}`
+        );
+
         return;
+
     }
 
-    const voucher=generateVoucherCode();
-    const validUntil=new Date();
-    validUntil.setDate(validUntil.getDate()+7);
-    const voucherDate=validUntil.toLocaleDateString("id-ID",{day:"2-digit",month:"long",year:"numeric"});
-
-    user.coins-=cost;
+    user.coins -= cost;
     user.exchanges++;
 
     user.history.push({
+
         type:"reward",
         rewardName:name,
         cost:cost,
-        voucher:voucher,
-        voucherValidUntil:voucherDate,
-        date:new Date().toLocaleString("id-ID")
+        date:new Date().toLocaleString("id-ID"),
+        voucherCode:generateVoucherCode()
+
     });
 
-    if(user.exchanges>=1) user.achievements=Math.max(user.achievements,2);
+    if(user.exchanges >= 1){
+
+        user.achievements =
+            Math.max(
+                user.achievements,
+                2
+            );
+
+    }
 
     saveUser();
     updateDashboard();
 
-    showSurprise("reward",{name:name,cost:cost,voucher:voucher,validUntil:voucherDate});
-}
-
-function showSurprise(type,data={}){
-    const overlay=document.getElementById("surpriseOverlay");
-    const icon=document.getElementById("surpriseIcon");
-    const title=document.getElementById("surpriseTitle");
-    const message=document.getElementById("surpriseMessage");
-    const value=document.getElementById("surpriseValue");
-    const voucherBox=document.getElementById("voucherBox");
-    const voucherCode=document.getElementById("voucherCode");
-    const voucherInfo=document.getElementById("voucherInfo");
-
-    if(voucherBox) voucherBox.style.display="none";
-
-    if(type==="deposit"){
-        icon.textContent="♻️";
-        title.textContent="Setoran Berhasil!";
-        message.innerHTML=`Limbah <b>${data.wasteType}</b> berhasil disetor dan diubah menjadi Eco Coin.`;
-        value.innerHTML=`🪙 +${Number(data.coins).toLocaleString("id-ID")} Eco Coin <small>⭐ +${data.xp} XP</small>`;
-    }
-
-    if(type==="reward"){
-        icon.textContent="🎁";
-        title.textContent="Penukaran Pupuk Berhasil!";
-        message.innerHTML=`Kamu berhasil menukarkan Eco Coin dengan <b>${data.name}</b>.`;
-        value.innerHTML=`🌱 ${data.name} <small>🪙 Sisa ${user.coins.toLocaleString("id-ID")} Eco Coin</small>`;
-
-        if(voucherBox && data.voucher){
-            voucherBox.style.display="block";
-            voucherCode.textContent=data.voucher;
-            voucherInfo.innerHTML=`Gunakan voucher <b>${data.voucher}</b> saat mengambil <b>${data.name}</b>.`;
-            voucherBox.dataset.code=data.voucher;
-            voucherBox.dataset.reward=data.name;
-            voucherBox.dataset.cost=data.cost;
-            voucherBox.dataset.validUntil=data.validUntil;
-
-            const rewardEl=document.getElementById("voucherRewardName");
-            const costEl=document.getElementById("voucherCost");
-            const validEl=document.getElementById("voucherValidDate");
-            if(rewardEl) rewardEl.textContent=data.name;
-            if(costEl) costEl.textContent=Number(data.cost).toLocaleString("id-ID")+" Eco Coin";
-            if(validEl) validEl.textContent=data.validUntil;
+    showSurprise(
+        "reward",
+        {
+            name:name,
+            cost:cost
         }
-    }
+    );
 
-    overlay.classList.add("show");
-    createConfetti();
-    createSurpriseSparkles();
 }
 
-function copyVoucher(){
-    const voucherBox=document.getElementById("voucherBox");
-    const code=voucherBox ? voucherBox.dataset.code : "";
-    if(!code) return;
 
-    if(navigator.clipboard && window.isSecureContext){
-        navigator.clipboard.writeText(code).then(()=>{
-            const btn=document.getElementById("copyVoucherBtn");
-            btn.textContent="✅ Voucher Tersalin!";
-            setTimeout(()=>{btn.textContent="📋 Salin Voucher";},2000);
-        }).catch(()=>alert("Kode voucher: "+code));
-    }else{
-        alert("Kode voucher: "+code);
+function generateVoucherCode(){
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "ECO-";
+    for(let i=0;i<6;i++){
+        code += chars[Math.floor(Math.random()*chars.length)];
     }
+    return code;
 }
 
+function getVoucherIcon(name){
+    const n = String(name || "").toLowerCase();
+    if(n.includes("kompos")) return "🍃";
+    if(n.includes("pupuk")) return "🌱";
+    if(n.includes("paket")) return "🎁";
+    return "🎟️";
+}
+
+function openVoucher(historyIndex){
+    const item = user.history[historyIndex];
+
+    if(!item || item.type !== "reward") return;
+
+    // Riwayat lama tetap bisa dibuka: kode dibuat otomatis dan disimpan.
+    if(!item.voucherCode){
+        item.voucherCode = generateVoucherCode();
+        saveUser();
+    }
+
+    document.getElementById("voucherIcon").textContent =
+        getVoucherIcon(item.rewardName);
+
+    document.getElementById("voucherRewardName").textContent =
+        item.rewardName || "Reward EcoFarming";
+
+    document.getElementById("voucherCode").textContent =
+        item.voucherCode;
+
+    document.getElementById("voucherOwner").textContent =
+        user.username || "Petani Eco";
+
+    document.getElementById("voucherCost").textContent =
+        `${Number(item.cost || 0).toLocaleString("id-ID")} Coin`;
+
+    document.getElementById("voucherDate").textContent =
+        item.date || "-";
+
+    document.getElementById("voucherModal").classList.add("show");
+}
+
+function closeVoucher(){
+    document.getElementById("voucherModal").classList.remove("show");
+}
 
 function downloadVoucher(){
-    const box=document.getElementById("voucherBox");
-    if(!box) return;
+    const name = document.getElementById("voucherRewardName").textContent;
+    const code = document.getElementById("voucherCode").textContent;
+    const owner = document.getElementById("voucherOwner").textContent;
+    const cost = document.getElementById("voucherCost").textContent;
+    const date = document.getElementById("voucherDate").textContent;
 
-    const code=box.dataset.code || "";
-    const reward=box.dataset.reward || "Reward EcoFarming";
-    const cost=box.dataset.cost || "0";
-    const validUntil=box.dataset.validUntil || "-";
-
-    if(!code){
-        alert("Voucher belum tersedia.");
-        return;
-    }
-
-    // Unduh sebagai HTML mandiri agar voucher tetap bisa dibuka/cetak kapan saja.
-    const voucherPage=`<!DOCTYPE html>
+    const html = `<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>EcoFarming E-Voucher ${code}</title>
+<title>E-Voucher EcoFarming - ${code}</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:#f1f8f3;font-family:Arial,Helvetica,sans-serif;display:flex;align-items:center;justify-content:center;padding:24px;color:#183528}
-.card{width:min(520px,100%);background:#fff;border-radius:26px;overflow:hidden;box-shadow:0 18px 55px rgba(17,100,61,.18);border:1px solid #dcefe3}
-.head{background:linear-gradient(135deg,#198754,#11643d);color:#fff;padding:28px 26px}
-.brand{font-size:11px;font-weight:900;letter-spacing:1.5px;opacity:.9}
-h1{font-size:28px;margin:8px 0 4px}
-.sub{font-size:12px;opacity:.85;line-height:1.5}
-.main{padding:24px 26px}
-.row{display:flex;justify-content:space-between;gap:15px;margin-bottom:20px}
-.meta span{display:block;font-size:9px;color:#7a8b82;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
-.meta b{font-size:15px}
-.code{border:2px dashed #198754;background:#f3fbf6;border-radius:18px;text-align:center;padding:22px 12px}
-.label{font-size:10px;color:#6b7d73;font-weight:900;letter-spacing:1.4px;margin-bottom:8px}
-.code strong{font-size:28px;letter-spacing:4px;color:#11643d}
-.note{text-align:center;font-size:11px;color:#6b7d73;line-height:1.55;margin-top:12px}
-.tear{border-top:2px dashed #d7e9dd}
-.footer{padding:18px 26px;background:#fbfefc;display:flex;justify-content:space-between;gap:15px;font-size:11px;color:#6b7d73;line-height:1.5}
-.footer b{color:#11643d}
-@media print{body{background:#fff;padding:0}.card{box-shadow:none;border:0}}
+body{margin:0;padding:30px 15px;background:#eef8f1;font-family:Arial,Helvetica,sans-serif;color:#183528}
+.voucher{max-width:520px;margin:auto;background:#fff;border-radius:26px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.15)}
+.head{padding:28px;text-align:center;color:#fff;background:linear-gradient(135deg,#198754,#11643d)}
+.icon{font-size:48px} h1{font-size:23px;margin:8px 0 4px}.sub{font-size:12px;opacity:.9}
+.body{padding:28px}.reward{padding:20px;text-align:center;border:2px dashed #bfe4ca;border-radius:18px;background:#f7fcf8}
+.reward-icon{font-size:55px}h2{color:#11643d;margin:8px 0;font-size:21px}
+.code{margin:20px 0;padding:18px;text-align:center;border-radius:16px;background:#fff7dc;border:1px solid #f0d98c}
+.label{font-size:10px;font-weight:800;letter-spacing:1px;color:#8c6b12}.code b{display:block;margin-top:7px;font-size:28px;letter-spacing:4px;color:#70540b}
+.detail{display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:1px solid #e8f2eb;font-size:13px}
+.detail span{color:#6b7d73}.status{color:#198754;font-weight:800}
+.note{margin-top:20px;padding:13px;border-radius:13px;background:#effcf4;color:#52655b;font-size:11px;line-height:1.6;text-align:center}
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="head">
-    <div class="brand">ECOFARMING • E-VOUCHER</div>
-    <h1>Voucher Reward 🌱</h1>
-    <div class="sub">Voucher penukaran reward EcoFarming.</div>
-  </div>
-  <div class="main">
-    <div class="row">
-      <div class="meta"><span>Reward</span><b>${escapeVoucherText(reward)}</b></div>
-      <div class="meta" style="text-align:right"><span>Nilai</span><b>${Number(cost).toLocaleString("id-ID")} Eco Coin</b></div>
-    </div>
-    <div class="code">
-      <div class="label">KODE VOUCHER</div>
-      <strong>${escapeVoucherText(code)}</strong>
-      <div class="note">Tunjukkan kode ini saat mengambil <b>${escapeVoucherText(reward)}</b>.</div>
-    </div>
-  </div>
-  <div class="tear"></div>
-  <div class="footer">
-    <div>Berlaku sampai<br><b>${escapeVoucherText(validUntil)}</b></div>
-    <div style="text-align:right">EcoFarming<br><b>Smart Farming</b></div>
-  </div>
+<div class="voucher">
+<div class="head"><div class="icon">🌱</div><h1>E-VOUCHER ECOFARMING</h1><div class="sub">Bukti penukaran reward Eco Coin</div></div>
+<div class="body">
+<div class="reward"><div class="reward-icon">${getVoucherIcon(name)}</div><h2>${name}</h2><div>Reward berhasil diperoleh melalui EcoFarming.</div></div>
+<div class="code"><div class="label">KODE VOUCHER</div><b>${code}</b></div>
+<div class="detail"><span>Pemilik</span><b>${owner}</b></div>
+<div class="detail"><span>Nilai Penukaran</span><b>${cost}</b></div>
+<div class="detail"><span>Tanggal Penukaran</span><b>${date}</b></div>
+<div class="detail"><span>Status</span><b class="status">Voucher Diperoleh</b></div>
+<div class="note">Tunjukkan kode voucher ini saat mengambil reward pupuk/kompos. Simpan file ini sebagai bukti penukaran.</div>
+</div>
 </div>
 </body>
 </html>`;
 
-    const blob=new Blob([voucherPage],{type:"text/html;charset=utf-8"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download=`EcoFarming-EVoucher-${code}.html`;
+    const blob = new Blob([html], {type:"text/html;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `E-Voucher-EcoFarming-${code}.html`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
-function escapeVoucherText(value){
-    return String(value).replace(/[&<>"']/g,function(ch){
-        return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[ch];
-    });
+function showSurprise(type,data={}){
+
+    const overlay =
+        document.getElementById("surpriseOverlay");
+
+    const icon =
+        document.getElementById("surpriseIcon");
+
+    const title =
+        document.getElementById("surpriseTitle");
+
+    const message =
+        document.getElementById("surpriseMessage");
+
+    const value =
+        document.getElementById("surpriseValue");
+
+    if(type === "deposit"){
+
+        icon.textContent = "♻️";
+
+        title.textContent =
+            "Setoran Berhasil!";
+
+        message.innerHTML =
+            `Limbah <b>${data.wasteType}</b>
+            berhasil disetor dan diubah
+            menjadi Eco Coin.`;
+
+        value.innerHTML =
+            `🪙 +${Number(data.coins)
+                .toLocaleString("id-ID")} Eco Coin
+
+            <small>
+            ⭐ +${data.xp} XP
+            </small>`;
+
+    }
+
+    if(type === "reward"){
+
+        icon.textContent = "🎁";
+
+        title.textContent =
+            "Reward Berhasil Dibuka!";
+
+        message.innerHTML =
+            `Kamu berhasil menukarkan Eco Coin
+            dengan <b>${data.name}</b>.`;
+
+        value.innerHTML =
+            `🌱 ${data.name}
+
+            <small>
+            🪙 Sisa ${user.coins
+                .toLocaleString("id-ID")} Eco Coin
+            </small>`;
+
+    }
+
+    overlay.classList.add("show");
+
+    createConfetti();
+    createSurpriseSparkles();
+
 }
 
 function closeSurprise(){
@@ -4006,7 +3987,12 @@ function renderHistory(){
     }
 
     const sortedHistory =
-        [...user.history].reverse();
+        user.history
+        .map((item,_historyIndex)=>({
+            ...item,
+            _historyIndex
+        }))
+        .reverse();
 
     list.innerHTML =
         sortedHistory.map((item,index)=>{
@@ -4073,7 +4059,9 @@ function renderHistory(){
             if(item.type === "reward"){
 
                 return `
-                <div class="history-item">
+                <div class="history-item reward-clickable"
+                     onclick="openVoucher(${item._historyIndex})"
+                     title="Klik untuk melihat E-Voucher">
 
                     <div class="history-left">
 
@@ -4097,6 +4085,11 @@ function renderHistory(){
                                 ${Number(item.cost)
                                     .toLocaleString("id-ID")}
                                 Eco Coin
+
+                                <br>
+                                <span class="history-voucher-hint">
+                                    🎟️ Klik untuk lihat E-Voucher
+                                </span>
 
                             </p>
 
@@ -5581,6 +5574,16 @@ function updateSalesChart(){
 
 updateDashboard();
 updateSalesChart();
+
+document.getElementById("voucherModal")
+.addEventListener(
+    "click",
+    function(e){
+        if(e.target === this){
+            closeVoucher();
+        }
+    }
+);
 
 document.getElementById("rewardModal")
 .addEventListener(
