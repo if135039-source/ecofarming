@@ -1818,20 +1818,75 @@ Gunakan Eco Coin untuk menukar reward
                 <option value="Kentang">Kentang</option>
                 <option value="Mentimun">Mentimun</option>
                 <option value="Semangka">Semangka</option>
+                <option value="Tembakau">Tembakau</option>
+                <option value="Kangkung">Kangkung</option>
             </select>
         </div>
 
         <div class="sales-filter">
-            <label for="salesRegion">📍 Pilih wilayah</label>
-            <select id="salesRegion" onchange="updateSalesChart()">
-                <option value="Semua Wilayah">Semua Wilayah</option>
-                <option value="Sumatra">Sumatra</option>
-                <option value="Jawa">Jawa</option>
-                <option value="Bali & Nusa Tenggara">Bali & Nusa Tenggara</option>
-                <option value="Kalimantan">Kalimantan</option>
-                <option value="Sulawesi">Sulawesi</option>
-                <option value="Maluku & Papua">Maluku & Papua</option>
-            </select>
+            <label for="salesCitySearch">📍 Cari kota/wilayah</label>
+            <div class="sales-search" style="margin-bottom:10px;">
+                <input
+                    type="text"
+                    id="salesCitySearch"
+                    placeholder="🔎 Ketik nama kota, misalnya Malang..."
+                    oninput="searchSalesCityDirect()"
+                    autocomplete="off"
+                    style="width:100%;padding:10px 12px;border:1px solid #d7e4d8;border-radius:10px;box-sizing:border-box;"
+                >
+            </div>
+            <select id="salesRegion" onchange="updateSalesChart()" style="display:none;">
+        <option value="Semua Kota">Semua Kota</option>
+        <option value="Bangkalan">Bangkalan</option>
+        <option value="Banyuwangi">Banyuwangi</option>
+        <option value="Blitar">Blitar</option>
+        <option value="Bojonegoro">Bojonegoro</option>
+        <option value="Bondowoso">Bondowoso</option>
+        <option value="Gresik">Gresik</option>
+        <option value="Jember">Jember</option>
+        <option value="Jombang">Jombang</option>
+        <option value="Kediri">Kediri</option>
+        <option value="Lamongan">Lamongan</option>
+        <option value="Lumajang">Lumajang</option>
+        <option value="Madiun">Madiun</option>
+        <option value="Magetan">Magetan</option>
+        <option value="Malang">Malang</option>
+        <option value="Mojokerto">Mojokerto</option>
+        <option value="Nganjuk">Nganjuk</option>
+        <option value="Ngawi">Ngawi</option>
+        <option value="Pacitan">Pacitan</option>
+        <option value="Pamekasan">Pamekasan</option>
+        <option value="Pasuruan">Pasuruan</option>
+        <option value="Ponorogo">Ponorogo</option>
+        <option value="Probolinggo">Probolinggo</option>
+        <option value="Sampang">Sampang</option>
+        <option value="Sidoarjo">Sidoarjo</option>
+        <option value="Situbondo">Situbondo</option>
+        <option value="Sumenep">Sumenep</option>
+        <option value="Trenggalek">Trenggalek</option>
+        <option value="Tuban">Tuban</option>
+        <option value="Tulungagung">Tulungagung</option>
+        <option value="Banjarnegara">Banjarnegara</option>
+        <option value="Banyumas">Banyumas</option>
+        <option value="Batang">Batang</option>
+        <option value="Blora">Blora</option>
+        <option value="Boyolali">Boyolali</option>
+        <option value="Brebes">Brebes</option>
+        <option value="Cilacap">Cilacap</option>
+        <option value="Demak">Demak</option>
+        <option value="Grobogan">Grobogan</option>
+        <option value="Jepara">Jepara</option>
+        <option value="Karanganyar">Karanganyar</option>
+        <option value="Kebumen">Kebumen</option>
+        <option value="Kendal">Kendal</option>
+        <option value="Klaten">Klaten</option>
+        <option value="Kudus">Kudus</option>
+        <option value="Magelang">Magelang</option>
+        <option value="Pati">Pati</option>
+        <option value="Pekalongan">Pekalongan</option>
+        <option value="Pemalang">Pemalang</option>
+        <option value="Purbalingga">Purbalingga</option>
+</select>
         </div>
 
     </div>
@@ -1840,8 +1895,9 @@ Gunakan Eco Coin untuk menukar reward
 
     <div class="sales-caption">
         <span id="salesCaption">
-            📊 Menampilkan simulasi penjualan Padi di semua wilayah.
+            📊 Menampilkan simulasi penjualan Padi di semua kota.
         </span>
+        <strong id="salesPrice" style="display:block;margin-top:6px;">Harga: -</strong>
         <strong id="salesHighest">
             Musim tertinggi: -
         </strong>
@@ -4963,12 +5019,55 @@ const salesSeasons = [
 ];
 
 const salesRegions = [
-    "Sumatra",
-    "Jawa",
-    "Bali & Nusa Tenggara",
-    "Kalimantan",
-    "Sulawesi",
-    "Maluku & Papua"
+    "Bangkalan",
+    "Banyuwangi",
+    "Blitar",
+    "Bojonegoro",
+    "Bondowoso",
+    "Gresik",
+    "Jember",
+    "Jombang",
+    "Kediri",
+    "Lamongan",
+    "Lumajang",
+    "Madiun",
+    "Magetan",
+    "Malang",
+    "Mojokerto",
+    "Nganjuk",
+    "Ngawi",
+    "Pacitan",
+    "Pamekasan",
+    "Pasuruan",
+    "Ponorogo",
+    "Probolinggo",
+    "Sampang",
+    "Sidoarjo",
+    "Situbondo",
+    "Sumenep",
+    "Trenggalek",
+    "Tuban",
+    "Tulungagung",
+    "Banjarnegara",
+    "Banyumas",
+    "Batang",
+    "Blora",
+    "Boyolali",
+    "Brebes",
+    "Cilacap",
+    "Demak",
+    "Grobogan",
+    "Jepara",
+    "Karanganyar",
+    "Kebumen",
+    "Kendal",
+    "Klaten",
+    "Kudus",
+    "Magelang",
+    "Pati",
+    "Pekalongan",
+    "Pemalang",
+    "Purbalingga"
 ];
 
 /*
@@ -4985,16 +5084,76 @@ const salesBase = {
     "Tomat": { "Musim Hujan": 68, "Musim Kemarau": 81, "Pancaroba Awal": 73, "Pancaroba Akhir": 65 },
     "Kentang": { "Musim Hujan": 63, "Musim Kemarau": 77, "Pancaroba Awal": 70, "Pancaroba Akhir": 66 },
     "Mentimun": { "Musim Hujan": 72, "Musim Kemarau": 84, "Pancaroba Awal": 75, "Pancaroba Akhir": 69 },
-    "Semangka": { "Musim Hujan": 57, "Musim Kemarau": 93, "Pancaroba Awal": 74, "Pancaroba Akhir": 61 }
+    "Semangka": { "Musim Hujan": 57, "Musim Kemarau": 93, "Pancaroba Awal": 74, "Pancaroba Akhir": 61 },
+    "Tembakau": { "Musim Hujan": 62, "Musim Kemarau": 92, "Pancaroba Awal": 78, "Pancaroba Akhir": 68 },
+    "Kangkung": { "Musim Hujan": 88, "Musim Kemarau": 82, "Pancaroba Awal": 86, "Pancaroba Akhir": 84 },
 };
 
 const salesRegionFactor = {
-    "Sumatra": 1.08,
-    "Jawa": 1.22,
-    "Bali & Nusa Tenggara": 0.92,
-    "Kalimantan": 0.86,
-    "Sulawesi": 0.98,
-    "Maluku & Papua": 0.72
+    "Bangkalan": 0.93,
+    "Banyuwangi": 1.04,
+    "Blitar": 0.88,
+    "Bojonegoro": 0.97,
+    "Bondowoso": 0.86,
+    "Gresik": 1.03,
+    "Jember": 1.06,
+    "Jombang": 0.95,
+    "Kediri": 1.05,
+    "Lamongan": 0.99,
+    "Lumajang": 0.91,
+    "Madiun": 0.98,
+    "Magetan": 0.89,
+    "Malang": 1.18,
+    "Mojokerto": 0.94,
+    "Nganjuk": 0.92,
+    "Ngawi": 0.87,
+    "Pacitan": 0.84,
+    "Pamekasan": 0.90,
+    "Pasuruan": 1.02,
+    "Ponorogo": 0.96,
+    "Probolinggo": 0.90,
+    "Sampang": 0.85,
+    "Sidoarjo": 1.01,
+    "Situbondo": 0.88,
+    "Sumenep": 0.86,
+    "Trenggalek": 0.83,
+    "Tuban": 0.94,
+    "Tulungagung": 0.97,
+    "Banjarnegara": 0.91,
+    "Banyumas": 1.02,
+    "Batang": 0.95,
+    "Blora": 0.89,
+    "Boyolali": 1.01,
+    "Brebes": 0.98,
+    "Cilacap": 1.00,
+    "Demak": 1.04,
+    "Grobogan": 0.96,
+    "Jepara": 0.97,
+    "Karanganyar": 1.03,
+    "Kebumen": 0.94,
+    "Kendal": 1.00,
+    "Klaten": 1.05,
+    "Kudus": 1.06,
+    "Magelang": 1.02,
+    "Pati": 1.01,
+    "Pekalongan": 0.96,
+    "Pemalang": 0.95,
+    "Purbalingga": 0.93
+};
+
+
+const salesPrice = {
+    "Padi": 6500,
+    "Jagung": 5200,
+    "Cabai": 42000,
+    "Kedelai": 11000,
+    "Bawang Merah": 32000,
+    "Tomat": 9000,
+    "Kentang": 14000,
+    "Mentimun": 8000,
+    "Semangka": 6500,
+    "Tembakau": 38000,
+    "Kangkung": 6000
 };
 
 const salesSeasonFactor = {
@@ -5006,7 +5165,7 @@ const salesSeasonFactor = {
 
 function getSalesValue(plant, region, season){
     const base = salesBase[plant]?.[season] || 0;
-    const factor = region === "Semua Wilayah"
+    const factor = region === "Semua Kota"
         ? 1
         : (salesRegionFactor[region] || 1);
 
@@ -5019,6 +5178,36 @@ function getAllRegionSales(plant, season){
     }, 0);
 }
 
+
+function searchSalesCityDirect(){
+    const input = document.getElementById("salesCitySearch");
+    const select = document.getElementById("salesRegion");
+    if(!input || !select) return;
+
+    const query = input.value.trim().toLowerCase();
+
+    // Kosong = tampilkan semua kota
+    if(query === "") {
+        select.value = "Semua Kota";
+        updateSalesChart();
+        return;
+    }
+
+    // Cari langsung dari daftar kota tanpa harus membuka opsi dropdown
+    const cities = Array.from(select.options).filter(option => option.value !== "Semua Kota");
+    const exact = cities.find(option => option.text.toLowerCase() === query);
+    const match = exact || cities.find(option => option.text.toLowerCase().includes(query));
+
+    if(match){
+        select.value = match.value;
+        updateSalesChart();
+    } else {
+        // Jika belum cocok, grafik tidak dipindahkan ke kota lain
+        // dan total dibuat nol agar hasil pencarian tidak menyesatkan.
+        updateSalesChart();
+    }
+}
+
 function updateSalesChart(){
 
     const plantSelect = document.getElementById("salesPlant");
@@ -5027,6 +5216,7 @@ function updateSalesChart(){
     const totalEl = document.getElementById("salesTotal");
     const captionEl = document.getElementById("salesCaption");
     const highestEl = document.getElementById("salesHighest");
+    const priceEl = document.getElementById("salesPrice");
     const summaryEl = document.getElementById("salesRegionSummary");
 
     if(!plantSelect || !regionSelect || !chart) return;
@@ -5034,9 +5224,15 @@ function updateSalesChart(){
     const plant = plantSelect.value;
     const region = regionSelect.value;
 
+    if(priceEl){
+        const price = salesPrice[plant] || 0;
+        priceEl.textContent = `Harga ${plant}: Rp ${price.toLocaleString("id-ID")} / kg`;
+    }
+
+
     let values;
 
-    if(region === "Semua Wilayah"){
+    if(region === "Semua Kota"){
         values = salesSeasons.map(season => ({
             season,
             value: getAllRegionSales(plant, season)
@@ -5077,7 +5273,7 @@ function updateSalesChart(){
     highestEl.textContent =
         `Musim tertinggi: ${highest.season} (${highest.value.toLocaleString("id-ID")} tanaman)`;
 
-    if(region === "Semua Wilayah"){
+    if(region === "Semua Kota"){
         summaryEl.innerHTML = salesRegions.map(regionName => {
 
             const regionTotal = salesSeasons.reduce(
