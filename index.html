@@ -1293,6 +1293,138 @@ canvas{
     color:var(--muted);
 }
 
+
+/* GRAFIK PENJUALAN TERBARU */
+.sales-chart-card{
+    margin-top:22px;
+    overflow:hidden;
+}
+
+.sales-chart-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.sales-chart-head h3{
+    font-size:18px;
+    margin-bottom:5px;
+}
+
+.sales-chart-head p{
+    color:var(--muted);
+    font-size:12px;
+}
+
+.sales-total{
+    background:var(--green-light);
+    color:var(--green-dark);
+    padding:10px 14px;
+    border-radius:14px;
+    font-weight:900;
+    font-size:14px;
+    white-space:nowrap;
+}
+
+.sales-chart{
+    height:245px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-around;
+    gap:12px;
+    padding:18px 10px 0;
+    border-bottom:2px solid #dfece4;
+    background:
+        linear-gradient(to top,rgba(25,135,84,.035) 1px,transparent 1px);
+    background-size:100% 48px;
+}
+
+.sales-day{
+    height:100%;
+    flex:1;
+    max-width:90px;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    align-items:center;
+    gap:8px;
+}
+
+.sales-value{
+    font-size:11px;
+    font-weight:800;
+    color:var(--green-dark);
+}
+
+.sales-bar-wrap{
+    width:100%;
+    height:175px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+}
+
+.sales-bar{
+    width:min(42px,70%);
+    min-height:8px;
+    background:linear-gradient(180deg,#49b878,#198754);
+    border-radius:10px 10px 3px 3px;
+    box-shadow:0 7px 16px rgba(25,135,84,.16);
+    transition:.3s ease;
+}
+
+.sales-day:hover .sales-bar{
+    transform:translateY(-5px);
+    filter:brightness(1.05);
+}
+
+.sales-label{
+    font-size:11px;
+    color:var(--muted);
+    font-weight:700;
+}
+
+.sales-caption{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:14px;
+    font-size:11px;
+    color:var(--muted);
+}
+
+.sales-caption strong{
+    color:var(--green);
+}
+
+@media(max-width:650px){
+    .sales-chart{
+        height:215px;
+        gap:5px;
+        padding-left:3px;
+        padding-right:3px;
+    }
+
+    .sales-bar-wrap{
+        height:150px;
+    }
+
+    .sales-bar{
+        width:28px;
+    }
+
+    .sales-total{
+        font-size:12px;
+        padding:8px 10px;
+    }
+
+    .sales-chart-head{
+        flex-direction:column;
+    }
+}
+
 @media(max-width:950px){
 
     .nav-menu{
@@ -1587,6 +1719,92 @@ Gunakan Eco Coin untuk menukar reward
 <div class="stat-value" id="achievementDisplay">0</div>
 <div class="stat-label">Pencapaian</div>
 </div>
+
+</div>
+
+
+<div class="section-title">
+<h2>📈 Grafik Penjualan Terbaru</h2>
+<span>7 hari terakhir</span>
+</div>
+
+<div class="card sales-chart-card">
+
+    <div class="sales-chart-head">
+        <div>
+            <h3>Tren Penjualan Produk</h3>
+            <p>Perkembangan jumlah produk terjual dalam 7 hari terakhir.</p>
+        </div>
+
+        <div class="sales-total">
+            Total: 140 produk
+        </div>
+    </div>
+
+    <div class="sales-chart">
+
+        <div class="sales-day">
+            <div class="sales-value">12</div>
+            <div class="sales-bar-wrap">
+                <div class="sales-bar" style="height:43%"></div>
+            </div>
+            <div class="sales-label">Sen</div>
+        </div>
+
+        <div class="sales-day">
+            <div class="sales-value">18</div>
+            <div class="sales-bar-wrap">
+                <div class="sales-bar" style="height:64%"></div>
+            </div>
+            <div class="sales-label">Sel</div>
+        </div>
+
+        <div class="sales-day">
+            <div class="sales-value">15</div>
+            <div class="sales-bar-wrap">
+                <div class="sales-bar" style="height:54%"></div>
+            </div>
+            <div class="sales-label">Rab</div>
+        </div>
+
+        <div class="sales-day">
+            <div class="sales-value">25</div>
+            <div class="sales-bar-wrap">
+                <div class="sales-bar" style="height:89%"></div>
+            </div>
+            <div class="sales-label">Kam</div>
+        </div>
+
+        <div class="sales-day">
+            <div class="sales-value">22</div>
+            <div class="sales-bar-wrap">
+                <div class="sales-bar" style="height:79%"></div>
+            </div>
+            <div class="sales-label">Jum</div>
+        </div>
+
+        <div class="sales-day">
+            <div class="sales-value">30</div>
+            <div class="sales-bar-wrap">
+                <div class="sales-bar" style="height:100%"></div>
+            </div>
+            <div class="sales-label">Sab</div>
+        </div>
+
+        <div class="sales-day">
+            <div class="sales-value">18</div>
+            <div class="sales-bar-wrap">
+                <div class="sales-bar" style="height:64%"></div>
+            </div>
+            <div class="sales-label">Min</div>
+        </div>
+
+    </div>
+
+    <div class="sales-caption">
+        <span>📊 Data penjualan contoh untuk tampilan dashboard</span>
+        <strong>Penjualan tertinggi: 30 produk</strong>
+    </div>
 
 </div>
 
