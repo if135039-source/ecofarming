@@ -4976,348 +4976,556 @@ function addMessage(text,type){
 
 }
 
-function getAIResponse(question){
+/* =========================================================
+   ECOAI - MESIN JAWABAN YANG LEBIH LENGKAP
+   ---------------------------------------------------------
+   Catatan:
+   - Versi ini dapat menjawab jauh lebih banyak variasi
+     pertanyaan tanpa harus memakai kata kunci yang persis sama.
+   - Untuk benar-benar menjawab pertanyaan apa pun seperti
+     ChatGPT, sambungkan fungsi askEcoAIToServer() ke backend
+     AI milik Anda. Jangan menaruh API key rahasia di HTML.
+========================================================= */
 
-    const q =
-        question.toLowerCase();
+const ECOAI_API_URL = ""; 
+// Contoh jika nanti punya backend:
+// const ECOAI_API_URL = "/api/ecoai";
 
-    if(q.includes("tembakau")){
+function escapeEcoAI(text){
+    return String(text).replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",
+        '"':"&quot;","'":"&#039;"
+    }[m]));
+}
 
-        if(
-            q.includes("panen") ||
-            q.includes("umur")
-        ){
+function normalizeEcoQuestion(question){
+    return question
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g,"")
+        .replace(/[^\w\s?%°.-]/g," ")
+        .replace(/\s+/g," ")
+        .trim();
+}
 
-            return `
-            🌿 <b>Tembakau</b> umumnya membutuhkan waktu
-            beberapa bulan hingga daun mencapai tingkat kematangan
-            yang sesuai untuk dipanen.
+function hasAny(q, words){
+    return words.some(w => q.includes(w));
+}
 
-            <br><br>
+function getPlantName(q){
+    const plants = [
+        ["padi","Padi 🌾"],["jagung","Jagung 🌽"],["cabai","Cabai 🌶️"],
+        ["tomat","Tomat 🍅"],["tembakau","Tembakau 🌿"],
+        ["kedelai","Kedelai 🫘"],["bawang merah","Bawang Merah 🧅"],
+        ["kentang","Kentang 🥔"],["mentimun","Mentimun 🥒"],
+        ["semangka","Semangka 🍉"],["kangkung","Kangkung 🥬"],
+        ["terong","Terong 🍆"],["sawi","Sawi 🥬"],
+        ["bayam","Bayam 🥬"],["wortel","Wortel 🥕"],
+        ["singkong","Singkong"],["ubi","Ubi"],
+        ["tebu","Tebu"],["kacang","Kacang"]
+    ];
+    const found = plants.find(([key]) => q.includes(key));
+    return found ? found[1] : null;
+}
 
-            Waktu panen dapat berbeda berdasarkan varietas,
-            kondisi lingkungan, pemeliharaan, dan perkembangan daun.
+/*
+ * Jika backend AI tersedia, fungsi ini menjadi jalur utama.
+ * Backend menerima {message, context} dan mengembalikan:
+ * { answer: "..." }
+ */
+async function askEcoAIToServer(question){
+    if(!ECOAI_API_URL) return null;
 
-            <br><br>
+    try{
+        const response = await fetch(ECOAI_API_URL,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+                message:question,
+                context:{
+                    app:"EcoFarming",
+                    language:"id",
+                    username:user?.username || "Petani Eco",
+                    coins:user?.coins || 0,
+                    level:user?.xp || 0
+                }
+            })
+        });
 
-            Kamu juga bisa menggunakan fitur
-            <b>Prediksi Panen</b> EcoFarming untuk mendapatkan
-            perkiraan waktu panen.
-            `;
+        if(!response.ok) return null;
 
+        const data = await response.json();
+
+        if(data && data.answer){
+            return String(data.answer)
+                .replace(/\n/g,"<br>");
         }
-
-        if(
-            q.includes("air") ||
-            q.includes("siram") ||
-            q.includes("irigasi")
-        ){
-
-            return `
-            💧 <b>Tembakau</b> membutuhkan kelembapan tanah
-            yang cukup tetapi tidak menyukai kondisi tergenang.
-
-            <br><br>
-
-            Pantau kelembapan tanah dan sesuaikan penyiraman
-            dengan cuaca, suhu, fase pertumbuhan, dan kondisi lahan.
-
-            <br><br>
-
-            Kamu bisa menggunakan fitur
-            <b>Irigasi Pintar</b> untuk mendapatkan rekomendasi.
-            `;
-
-        }
-
-        return `
-        🌿 <b>Tembakau</b> membutuhkan pengelolaan
-        air, nutrisi, cahaya, dan kondisi tanah yang baik.
-
-        <br><br>
-
-        Perhatikan perkembangan daun dan kondisi tanaman
-        secara rutin. Waktu panen dapat berbeda menurut
-        varietas dan lingkungan.
-        `;
-
+    }catch(error){
+        console.warn("EcoAI backend tidak tersedia:",error);
     }
 
-    if(
-        q.includes("kuning") ||
-        q.includes("daun kuning")
-    ){
+    return null;
+}
 
-        return `
-        🍃 <b>Daun menguning</b> dapat disebabkan oleh beberapa hal,
-        seperti kekurangan nutrisi, terlalu banyak air,
-        kurang cahaya, atau kondisi akar yang terganggu.
+/* Jawaban lokal sebagai fallback agar EcoAI tetap berjalan
+   walaupun website hanya berupa HTML di GitHub Pages. */
+function getLocalEcoAIResponse(question){
+    const q = normalizeEcoQuestion(question);
+    const plant = getPlantName(q);
 
-        <br><br>
+    // EcoAI lokal dibuat lebih rinci: setiap jawaban memiliki
+    // penjelasan, kemungkinan penyebab, langkah penanganan,
+    // pencegahan, dan pertanyaan lanjutan yang relevan.
 
-        Coba periksa kelembapan tanah, kondisi akar,
-        pencahayaan, dan pola pemupukan.
-        `;
+    const answer = (title, intro, sections=[], closing="") => {
+        let html = `<b>${title}</b><br><br>${intro}`;
+        sections.forEach(sec => {
+            html += `<br><br><b>${sec[0]}</b><br>${sec[1]}`;
+        });
+        if(closing) html += `<br><br><i>${closing}</i>`;
+        return html;
+    };
 
+    /* SAPAAN */
+    if(hasAny(q,["halo","hai","hello","hi","selamat pagi","selamat siang","selamat sore","selamat malam","apa kabar"])){
+        return answer(
+            "👋 Halo! Saya EcoAI 🌱",
+            "Saya siap membantu kamu memahami masalah pertanian secara lebih rinci.",
+            [
+                ["🌱 Tanaman", "Menjelaskan cara menanam, pemeliharaan, pemupukan, gejala tanaman, penyakit, hama, dan panen."],
+                ["🧪 Pupuk & tanah", "Membantu memahami NPK, urea, pupuk organik, pH tanah, bahan organik, dan pemupukan."],
+                ["💧 Air & irigasi", "Membantu menentukan kebutuhan penyiraman berdasarkan kondisi tanah, cuaca, fase tanaman, dan jenis tanaman."],
+                ["♻️ Limbah & kompos", "Menjelaskan pengolahan sisa tanaman dan sampah organik menjadi kompos atau bahan bernilai."],
+                ["🐛 Hama & penyakit", "Membantu mengenali kemungkinan penyebab berdasarkan gejala dan memberikan langkah pengendalian yang aman."],
+                ["📊 Panen & komoditas", "Menjelaskan indikator panen, penanganan setelah panen, dan faktor yang memengaruhi harga."]
+            ],
+            "Agar jawaban semakin tepat, tuliskan nama tanaman dan ceritakan gejala, umur tanaman, kondisi tanah, serta cuaca jika berkaitan."
+        );
     }
 
-    if(
-        q.includes("layu") ||
-        q.includes("lemas")
-    ){
-
-        return `
-        🌱 Jika tanaman layu, periksa kelembapan tanah terlebih dahulu.
-        Tanah terlalu kering maupun terlalu basah sama-sama dapat
-        menyebabkan masalah.
-
-        <br><br>
-
-        Periksa juga akar, suhu, dan kondisi lingkungan tanaman.
-        `;
-
+    /* IDENTITAS ECOFARMING */
+    if(hasAny(q,["ecofarming","eco farming","fitur","aplikasi ini","website ini","platform ini","tentang aplikasi","apa itu ecoai","siapa kamu"])){
+        return answer(
+            "🤖 Tentang EcoAI & EcoFarming",
+            "EcoAI adalah asisten pertanian di dalam EcoFarming. Fungsinya membantu pengguna memperoleh penjelasan dan panduan praktis terkait aktivitas pertanian.",
+            [
+                ["🏠 Dashboard", "Menampilkan ringkasan aktivitas dan informasi yang tersedia di EcoFarming."],
+                ["♻️ Setor Limbah", "Digunakan untuk aktivitas pengelolaan atau penyetoran limbah yang terhubung dengan sistem Eco Coin."],
+                ["🎁 Reward", "Eco Coin dapat digunakan untuk menukarkan reward yang tersedia."],
+                ["📋 Riwayat", "Menyimpan riwayat aktivitas penukaran sehingga pengguna dapat melihat kembali voucher yang diperoleh."],
+                ["📷 Kamera Tanaman", "Mendukung alur pemeriksaan tanaman yang tersedia pada aplikasi."],
+                ["🌾 Prediksi Panen", "Membantu memperkirakan waktu panen berdasarkan data yang dimasukkan ke sistem."],
+                ["💧 Irigasi Pintar", "Memberikan rekomendasi penyiraman berdasarkan jenis tanaman, kelembapan tanah, suhu, cuaca, dan fase tanaman."],
+                ["💬 EcoAI", "Menjadi tempat bertanya mengenai pertanian dengan penjelasan yang lebih mudah dipahami."]
+            ],
+            "Gunakan pertanyaan yang spesifik agar saya dapat memberikan langkah yang lebih terarah."
+        );
     }
 
-    if(
-        q.includes("pupuk") ||
-        q.includes("pemupukan")
-    ){
-
-        return `
-        🌿 Pemupukan sebaiknya disesuaikan dengan jenis tanaman,
-        umur tanaman, kondisi tanah, dan kebutuhan nutrisinya.
-
-        <br><br>
-
-        Jangan memberikan pupuk secara berlebihan karena dapat
-        mengganggu tanaman dan kondisi tanah.
-        `;
-
+    /* ECO COIN / REWARD / VOUCHER */
+    if(hasAny(q,["eco coin","ecocoin","koin","poin","reward","hadiah","voucher","e voucher","e-voucher","penukaran"])){
+        return answer(
+            "🎁 Eco Coin, Reward & E-Voucher",
+            "Eco Coin pada EcoFarming digunakan sebagai bagian dari mekanisme reward. Ketika saldo mencukupi, pengguna dapat melakukan penukaran terhadap reward yang tersedia.",
+            [
+                ["💰 Eco Coin", "Perhatikan jumlah saldo sebelum menukarkan reward. Pastikan jumlah koin yang dibutuhkan sesuai dengan reward yang dipilih."],
+                ["🎟️ E-Voucher", "Setelah penukaran berhasil, sistem dapat menampilkan kode voucher beserta informasi pemilik, nilai penukaran, tanggal penukaran, dan masa berlaku."],
+                ["📅 Masa berlaku", "Pada sistem saat ini, voucher dirancang berlaku sampai 1 hari setelah tanggal penukaran. Periksa tanggal yang ditampilkan pada voucher sebelum digunakan."],
+                ["📋 Riwayat", "Riwayat penukaran dapat digunakan untuk membuka kembali detail voucher yang pernah diperoleh."],
+                ["⚠️ Jika voucher tidak muncul", "Periksa riwayat penukaran, pastikan penukaran benar-benar berhasil, kemudian buka item riwayat tersebut untuk melihat detail voucher."]
+            ],
+            "Jika kamu ingin mengetahui proses penukaran, tanyakan misalnya: 'bagaimana cara menukar Eco Coin menjadi voucher?'"
+        );
     }
 
-    if(
-        q.includes("hama") ||
-        q.includes("ulat") ||
-        q.includes("kutu")
-    ){
-
-        return `
-        🐛 Untuk masalah hama, amati bagian daun,
-        batang, dan bawah daun secara rutin.
-
-        <br><br>
-
-        Pengendalian dapat dimulai dari menjaga kebersihan lahan,
-        mengambil hama secara manual jika memungkinkan,
-        serta menggunakan metode pengendalian yang sesuai.
-        `;
-
+    /* KOMPOS / LIMBAH */
+    if(hasAny(q,["kompos","limbah","sampah organik","sisa dapur","sisa makanan","daun kering","pupuk kompos"])){
+        return answer(
+            "♻️ Cara Mengolah Limbah Organik Menjadi Kompos",
+            "Kompos dibuat dengan menguraikan bahan organik secara terkendali. Bahan perlu memiliki keseimbangan antara bahan kaya karbon dan bahan kaya nitrogen serta kelembapan dan aerasi yang cukup.",
+            [
+                ["1. Pilih bahan", "Gunakan daun kering, rumput, sisa sayuran, sisa buah, dan bahan organik lain yang sesuai. Hindari bahan yang mengandung bahan kimia berbahaya."],
+                ["2. Seimbangkan bahan", "Campurkan bahan kering/cokelat sebagai sumber karbon dengan bahan hijau/basah sebagai sumber nitrogen. Jika terlalu basah, tambahkan bahan kering."],
+                ["3. Atur kelembapan", "Bahan sebaiknya lembap tetapi tidak tergenang. Kondisi terlalu basah dapat menurunkan aerasi dan menimbulkan bau."],
+                ["4. Beri udara", "Aduk atau balik kompos secara berkala agar oksigen masuk dan proses penguraian berlangsung lebih baik."],
+                ["5. Periksa kematangan", "Kompos matang umumnya berwarna gelap, teksturnya remah, suhunya sudah turun, dan bau menyengat berkurang."],
+                ["6. Gunakan", "Kompos matang dapat digunakan sebagai bahan organik untuk memperbaiki kondisi tanah dan mendukung pertumbuhan tanaman."]
+            ],
+            "Kalau komposmu bau, terlalu basah, atau tidak kunjung terurai, jelaskan kondisinya agar penyebabnya bisa dianalisis."
+        );
     }
 
-    if(
-        q.includes("kompos") ||
-        q.includes("limbah")
-    ){
-
-        return `
-        ♻️ Limbah organik seperti sisa sayuran,
-        kulit buah, daun kering, jerami, dan sisa tanaman
-        dapat dimanfaatkan sebagai bahan kompos.
-
-        <br><br>
-
-        Pisahkan limbah organik dari plastik, logam,
-        kaca, dan bahan berbahaya.
-        `;
-
+    /* MAGGOT / BSF */
+    if(hasAny(q,["maggot","bsf","black soldier fly","lalat tentara hitam"])){
+        return answer(
+            "🪰 Panduan Dasar Budidaya Maggot BSF",
+            "Maggot BSF (Black Soldier Fly) banyak dimanfaatkan untuk membantu mengolah bahan organik sekaligus menghasilkan biomassa yang bernilai.",
+            [
+                ["1. Siapkan wadah", "Gunakan wadah yang aman, memiliki sirkulasi udara baik, dan mudah dibersihkan."],
+                ["2. Siapkan media pakan", "Gunakan bahan organik yang sesuai dan tidak tercampur bahan berbahaya. Pakan jangan diberikan dalam jumlah berlebihan sekaligus."],
+                ["3. Jaga kondisi media", "Media terlalu basah dapat menimbulkan bau dan masalah lingkungan pemeliharaan. Atur jumlah pakan dan kelembapan."],
+                ["4. Pantau pertumbuhan", "Amati ukuran, aktivitas, bau, dan kondisi media secara rutin."],
+                ["5. Panen", "Maggot dapat dipanen sesuai tujuan pemanfaatannya. Sebagian populasi dapat dipertahankan untuk keberlanjutan siklus budidaya."]
+            ],
+            "Jika kamu ingin, tanyakan 'cara budidaya maggot dari telur sampai panen' untuk panduan berdasarkan tahap."
+        );
     }
 
-    if(
-        q.includes("maggot") ||
-        q.includes("bsf")
-    ){
-
-        return `
-        🪰 Maggot BSF dapat membantu menguraikan sebagian
-        limbah organik. Sisa pengolahan juga dapat dimanfaatkan
-        sebagai bahan organik setelah dikelola dengan benar.
-
-        <br><br>
-
-        Hindari memasukkan bahan yang tidak sesuai
-        dan jaga kondisi media tetap terkontrol.
-        `;
-
+    /* PUPUK */
+    if(hasAny(q,["pupuk","urea","npk","nitrogen","fosfor","kalium","kcl","za","dolomit","pemupukan"])){
+        return answer(
+            "🧪 Panduan Pemupukan Tanaman",
+            "Pemupukan bertujuan menyediakan unsur hara yang dibutuhkan tanaman. Dosis dan jenis pupuk tidak boleh disamaratakan karena kebutuhan tanaman dipengaruhi jenis tanaman, umur, kondisi tanah, dan tujuan budidaya.",
+            [
+                ["🌿 Nitrogen (N)", "Berperan penting dalam pertumbuhan vegetatif dan pembentukan daun. Kekurangan N dapat menyebabkan pertumbuhan kurang subur dan daun tua cenderung menguning."],
+                ["🌸 Fosfor (P)", "Berhubungan dengan perkembangan akar dan proses reproduktif tanaman, termasuk pembungaan dan pembentukan hasil."],
+                ["🍅 Kalium (K)", "Mendukung berbagai proses fisiologis tanaman dan berkaitan dengan kualitas serta ketahanan tanaman terhadap kondisi lingkungan tertentu."],
+                ["🌱 Pupuk organik", "Membantu menambah bahan organik dan mendukung kondisi fisik, kimia, serta biologis tanah."],
+                ["⚖️ Jangan berlebihan", "Pupuk berlebihan tidak otomatis membuat tanaman tumbuh lebih cepat. Kelebihan unsur atau garam pupuk dapat mengganggu akar dan lingkungan tanah."],
+                ["📌 Cara menentukan dosis", "Gunakan rekomendasi berdasarkan komoditas, umur/fase tanaman, kondisi tanah, dan label produk. Jika tersedia, hasil analisis tanah akan membantu menentukan pemupukan dengan lebih tepat."]
+            ],
+            "Sebutkan nama tanaman, umur tanaman, luas lahan, dan jenis pupuk yang tersedia jika kamu ingin dibuatkan contoh strategi pemupukan."
+        );
     }
 
-    if(
-        q.includes("panen") ||
-        q.includes("kapan panen")
-    ){
-
-        return `
-        🌾 Waktu panen berbeda-beda tergantung jenis dan varietas
-        tanaman, kondisi pertumbuhan, serta lingkungan.
-
-        <br><br>
-
-        Kamu bisa menggunakan fitur
-        <b>Prediksi Panen</b>
-        di EcoFarming untuk mendapatkan perkiraan
-        berdasarkan jenis tanaman.
-        `;
-
+    /* DAUN KUNING */
+    if(hasAny(q,["daun kuning","daunnya kuning","daun menguning","menguning","klorosis"])){
+        return answer(
+            "🍃 Mengapa Daun Tanaman Menguning?",
+            "Daun menguning bukan hanya disebabkan kekurangan pupuk. Penyebabnya dapat berasal dari nutrisi, air, akar, penyakit, hama, atau kondisi lingkungan.",
+            [
+                ["1. Kekurangan nitrogen", "Sering terlihat pada daun yang lebih tua terlebih dahulu karena nitrogen dapat dipindahkan dari jaringan tua ke jaringan muda."],
+                ["2. Terlalu banyak air", "Media yang terus-menerus jenuh dapat mengurangi oksigen di sekitar akar sehingga akar terganggu. Daun dapat menguning dan pertumbuhan melambat."],
+                ["3. Kekurangan air", "Tanaman yang kekurangan air dapat layu dan menunjukkan gejala stres, termasuk perubahan warna daun."],
+                ["4. Masalah akar", "Akar yang rusak, busuk, atau terganggu dapat mengurangi kemampuan tanaman menyerap air dan nutrisi."],
+                ["5. Hama atau penyakit", "Periksa permukaan dan bagian bawah daun, batang, serta akar. Cari bercak, lubang, serangga, lapisan seperti jamur, atau pola perubahan warna yang tidak biasa."],
+                ["6. Kondisi lingkungan", "Suhu ekstrem, cahaya yang tidak sesuai, dan kondisi tanah yang kurang baik juga dapat memengaruhi warna daun."],
+                ["🔎 Pemeriksaan awal", "Lihat daun mana yang menguning, mulai dari mana, apakah tanah basah/kering, dan apakah ada bercak atau hama. Jangan langsung menambah pupuk sebelum penyebabnya diketahui."]
+            ],
+            "Untuk diagnosis yang lebih tepat, tuliskan tanaman apa, umur tanaman, daun tua atau muda yang menguning, kondisi tanah, dan apakah ada bercak/hama."
+        );
     }
 
-    if(
-        q.includes("air") ||
-        q.includes("siram") ||
-        q.includes("irigasi")
-    ){
-
-        return `
-        💧 Kebutuhan air tanaman dipengaruhi oleh jenis tanaman,
-        umur, fase pertumbuhan, cuaca, suhu, dan kelembapan tanah.
-
-        <br><br>
-
-        Hindari penyiraman berlebihan dan pantau kelembapan tanah
-        secara berkala.
-        `;
-
+    /* LAYU */
+    if(hasAny(q,["layu","tanaman layu","daun lemas","daun lemas","tidak segar"])){
+        return answer(
+            "💧 Tanaman Layu: Penyebab dan Penanganan",
+            "Layu berarti keseimbangan air tanaman terganggu, tetapi penyebabnya tidak selalu kekurangan air.",
+            [
+                ["💧 Kekurangan air", "Periksa kelembapan tanah. Jika media sangat kering, tanaman mungkin mengalami stres kekeringan."],
+                ["🌧️ Kelebihan air", "Tanah yang terlalu basah dapat mengganggu akar karena kurang oksigen. Dalam kondisi tertentu tanaman justru layu meskipun tanah basah."],
+                ["🌱 Kerusakan akar", "Akar yang rusak atau membusuk dapat membuat tanaman tidak mampu menyerap air dengan baik."],
+                ["☀️ Panas berlebih", "Penguapan tinggi dapat membuat kehilangan air lebih cepat daripada kemampuan akar memasok air."],
+                ["🐛 Penyakit/hama", "Beberapa gangguan pada akar, batang, atau pembuluh tanaman dapat menyebabkan layu."],
+                ["✅ Langkah awal", "Periksa tanah, akar bila memungkinkan, batang, daun, dan kondisi cuaca. Sesuaikan penyiraman berdasarkan kondisi nyata, bukan hanya jadwal."]
+            ],
+            "Jangan langsung menyiram terus-menerus sebelum memeriksa apakah tanah sebenarnya sudah terlalu basah."
+        );
     }
 
-    if(
-        q.includes("harga") ||
-        q.includes("komoditas")
-    ){
-
-        return `
-        📈 Harga komoditas pertanian dapat berubah berdasarkan
-        wilayah, kualitas, musim, pasokan, permintaan,
-        dan kondisi pasar.
-
-        <br><br>
-
-        EcoFarming menyediakan kartu harga contoh
-        di Dashboard. Untuk transaksi nyata,
-        gunakan sumber harga resmi atau pasar setempat
-        sebagai acuan terbaru.
-        `;
-
+    /* HAMA */
+    if(hasAny(q,["hama","ulat","kutu","thrips","trips","aphid","kutu daun","wereng","belalang","penggerek","serangga"])){
+        return answer(
+            "🐛 Mengatasi Hama Tanaman Secara Terpadu",
+            "Pengendalian hama sebaiknya dimulai dengan identifikasi. Mengetahui jenis hama dan bagian tanaman yang diserang membantu menentukan tindakan yang tepat.",
+            [
+                ["1. Amati gejala", "Cari lubang pada daun, daun keriting, bekas gigitan, serangga kecil, telur, kotoran hama, atau kerusakan pada batang/buah."],
+                ["2. Periksa bagian bawah daun", "Banyak hama berukuran kecil bersembunyi di bagian bawah daun atau pada pucuk tanaman."],
+                ["3. Kendalikan secara mekanis", "Jika serangan ringan, hama tertentu dapat diambil secara manual atau bagian tanaman yang terserang berat dapat dipangkas secara tepat."],
+                ["4. Jaga kebersihan kebun", "Buang bagian tanaman yang terserang sesuai kebutuhan dan kurangi tempat yang mendukung perkembangan hama."],
+                ["5. Gunakan pengendalian biologis", "Musuh alami dapat membantu menekan populasi hama dan perlu dijaga keberadaannya."],
+                ["6. Pestisida sebagai pilihan terukur", "Jika diperlukan, gunakan produk yang sesuai label, sasaran, dosis, interval, dan aturan keselamatan. Jangan mencampur produk sembarangan."]
+            ],
+            "Kalau kamu bisa menyebutkan bentuk serangganya dan gejalanya, saya dapat membantu mempersempit kemungkinan hama."
+        );
     }
 
-    if(
-        q.includes("tanaman") ||
-        q.includes("menanam")
-    ){
-
-        return `
-        🌱 Agar tanaman tumbuh baik, perhatikan lima hal utama:
-
-        <br><br>
-
-        1. Kualitas tanah<br>
-        2. Ketersediaan air<br>
-        3. Cahaya matahari<br>
-        4. Nutrisi<br>
-        5. Pengendalian hama dan penyakit
-
-        <br><br>
-
-        Sesuaikan semuanya dengan jenis tanaman yang ditanam.
-        `;
-
+    /* PENYAKIT */
+    if(hasAny(q,["penyakit tanaman","jamur","busuk","bercak","antraknosa","layu fusarium","virus","bakteri","embun","mosaik","bercak daun"])){
+        return answer(
+            "🦠 Mengenali Penyakit Tanaman",
+            "Penyakit tanaman dapat disebabkan oleh jamur, bakteri, virus, atau faktor non-patogen. Gejalanya bisa mirip sehingga identifikasi perlu dilakukan secara hati-hati.",
+            [
+                ["🔍 Perhatikan pola gejala", "Catat apakah bercak berbentuk bulat, tidak beraturan, basah, kering, meluas dari tepi daun, atau mengikuti tulang daun."],
+                ["🌿 Periksa bagian lain", "Periksa daun, batang, buah, dan akar. Kondisi akar dan pangkal batang sering memberikan petunjuk penting."],
+                ["💧 Kelola kelembapan", "Kelembapan tinggi dan daun yang lama basah dapat mendukung perkembangan sebagian penyakit."],
+                ["✂️ Sanitasi", "Buang bagian tanaman yang terserang berat sesuai kebutuhan dan hindari penyebaran melalui alat atau bahan tanaman yang terkontaminasi."],
+                ["🧪 Pengendalian", "Gunakan pengendalian yang sesuai dengan penyebab yang diduga dan ikuti label produk. Hindari penggunaan fungisida/bakterisida secara membabi buta."]
+            ],
+            "Jika ada foto tanaman, gejala visual dapat membantu proses identifikasi, tetapi diagnosis pasti tetap memerlukan pemeriksaan yang memadai."
+        );
     }
 
-    if(
-        q.includes("coin") ||
-        q.includes("koin")
-    ){
-
-        return `
-        🪙 Eco Coin didapatkan dengan menyetorkan limbah.
-
-        <br><br>
-
-        Setiap <b>1 kg limbah = 20 Eco Coin</b>.
-
-        <br><br>
-
-        Eco Coin kemudian dapat digunakan untuk menukar
-        berbagai reward pada menu Reward.
-        `;
-
+    /* AIR / IRIGASI */
+    if(hasAny(q,["air","siram","penyiraman","irigasi","kelembapan","tanah kering","berapa kali siram"])){
+        return answer(
+            "💧 Cara Menentukan Kebutuhan Penyiraman",
+            "Tidak ada satu jadwal penyiraman yang cocok untuk semua tanaman. Kebutuhan air dipengaruhi jenis tanaman, umur/fase, jenis media, cuaca, suhu, kelembapan tanah, dan drainase.",
+            [
+                ["🌱 Persemaian", "Bibit biasanya memerlukan perhatian lebih terhadap kelembapan karena akar masih terbatas. Hindari media tergenang."],
+                ["🌿 Pertumbuhan", "Kebutuhan air meningkat seiring pertumbuhan, tetapi tetap harus disesuaikan dengan kondisi tanah."],
+                ["🌸 Berbunga & berbuah", "Kebutuhan air perlu stabil dan tidak boleh mengalami stres berat akibat kekeringan atau genangan."],
+                ["🌧️ Saat hujan", "Kurangi atau tunda penyiraman jika media sudah cukup lembap. Pastikan drainase berjalan baik."],
+                ["☀️ Saat panas", "Pantau media lebih sering karena penguapan meningkat. Jangan hanya mengikuti jadwal tanpa memeriksa kelembapan."],
+                ["📏 Praktik sederhana", "Periksa kelembapan tanah pada kedalaman zona akar dan lihat respons tanaman. Untuk lahan yang lebih besar, sensor kelembapan dapat membantu."]
+            ],
+            "EcoFarming juga memiliki fitur Irigasi Pintar yang menggunakan jenis tanaman, kelembapan tanah, suhu, cuaca, dan fase tanaman sebagai data rekomendasi."
+        );
     }
 
-    if(
-        q.includes("padi") ||
-        q.includes("beras")
-    ){
+    /* TANAH */
+    if(hasAny(q,["tanah","ph tanah","pH","tanah masam","tanah asam","tanah basa","drainase","subur","kesuburan tanah"])){
+        return answer(
+            "🌱 Cara Menjaga Kesuburan Tanah",
+            "Tanah yang produktif bukan hanya soal banyaknya pupuk. Struktur, bahan organik, pH, air, udara, dan aktivitas biologis semuanya berpengaruh.",
+            [
+                ["🧪 Periksa pH", "pH memengaruhi ketersediaan unsur hara. Jika pH terlalu rendah atau terlalu tinggi, beberapa unsur dapat menjadi kurang tersedia bagi tanaman."],
+                ["♻️ Tambahkan bahan organik", "Kompos dan bahan organik yang matang dapat membantu memperbaiki kondisi fisik dan biologis tanah."],
+                ["💧 Perbaiki drainase", "Air yang menggenang terlalu lama dapat mengganggu akar. Pastikan saluran atau struktur media memungkinkan kelebihan air keluar."],
+                ["🌿 Kurangi kerusakan struktur", "Pengolahan tanah yang berlebihan dapat merusak struktur dan kehidupan biologis tanah."],
+                ["🔬 Analisis tanah", "Untuk keputusan pemupukan yang lebih akurat, analisis tanah jauh lebih baik daripada menebak kebutuhan unsur hara."]
+            ],
+            "Jika kamu mengetahui hasil pH atau analisis tanah, masukkan nilainya dan saya dapat membantu menjelaskan artinya."
+        );
+    }
 
-        return `
-        🌾 <b>Padi</b> membutuhkan pengelolaan air,
-        nutrisi, dan gulma yang baik.
+    /* MENANAM */
+    if(hasAny(q,["cara menanam","menanam","tanam","bibit","benih","persemaian","budidaya"])){
+        return answer(
+            `🌱 Panduan Dasar Menanam${plant ? " " + plant : " Tanaman"}`,
+            "Keberhasilan budidaya dimulai dari benih/bibit yang baik, media yang sesuai, air yang cukup, nutrisi seimbang, dan pengamatan rutin.",
+            [
+                ["1. Tentukan komoditas dan tujuan", "Pilih tanaman yang sesuai dengan kondisi lingkungan, musim, lahan, dan kebutuhan pasar."],
+                ["2. Siapkan benih/bibit", "Gunakan bahan tanam yang sehat dan sesuai varietas. Bibit yang lemah atau terserang penyakit dapat meningkatkan risiko masalah sejak awal."],
+                ["3. Siapkan media/tanah", "Pastikan struktur cukup baik, memiliki bahan organik yang memadai, dan drainase tidak buruk."],
+                ["4. Atur jarak tanam", "Jarak harus menyesuaikan komoditas dan sistem budidaya agar tanaman mendapatkan ruang, cahaya, serta sirkulasi udara yang sesuai."],
+                ["5. Kelola air", "Jaga kelembapan sesuai fase tanaman dan hindari kekeringan maupun genangan berkepanjangan."],
+                ["6. Lakukan pemupukan terukur", "Sesuaikan jenis dan jumlah pupuk dengan kebutuhan tanaman serta kondisi tanah."],
+                ["7. Pantau hama dan penyakit", "Lakukan pemeriksaan rutin agar masalah dapat diketahui ketika masih ringan."],
+                ["8. Catat perkembangan", "Catatan tanggal tanam, pemupukan, penyiraman, cuaca, dan gejala tanaman akan membantu pengambilan keputusan."]
+            ],
+            "Jika kamu menyebutkan jenis tanaman dan luas lahan, panduan dapat dibuat lebih spesifik."
+        );
+    }
 
-        <br><br>
+    /* PANEN */
+    if(hasAny(q,["panen","kapan panen","siap panen","ciri panen","umur panen"])){
+        return answer(
+            "🌾 Menentukan Waktu Panen",
+            "Waktu panen tidak sebaiknya ditentukan hanya berdasarkan jumlah hari setelah tanam. Gunakan umur tanaman bersama indikator fisik dan tujuan pemasaran.",
+            [
+                ["📅 Umur tanaman", "Gunakan umur varietas sebagai acuan awal, tetapi kondisi lapangan dapat membuat waktu panen berbeda."],
+                ["👀 Warna dan bentuk", "Banyak komoditas memiliki perubahan warna, ukuran, tekstur, atau bentuk tertentu ketika mendekati matang."],
+                ["🌾 Kondisi bagian hasil", "Periksa biji, buah, umbi, atau bagian yang dipanen sesuai komoditas."],
+                ["💰 Tujuan pasar", "Tingkat kematangan yang optimal untuk konsumsi langsung dapat berbeda dari hasil yang akan dikirim atau disimpan."],
+                ["📦 Setelah panen", "Tangani hasil dengan hati-hati, kurangi benturan dan paparan kondisi yang mempercepat kerusakan."]
+            ],
+            "Sebutkan tanaman dan umur setelah tanam jika kamu ingin saya jelaskan indikator panennya."
+        );
+    }
 
-        Waktu panen bergantung pada varietas dan kondisi
-        pertumbuhan. Gunakan fitur Prediksi Panen
-        untuk mendapatkan perkiraan.
-        `;
+    /* HARGA */
+    if(hasAny(q,["harga","harga cabai","harga padi","harga jagung","harga komoditas","pasar","jual hasil","harga jual"])){
+        return answer(
+            "📊 Faktor yang Memengaruhi Harga Komoditas",
+            "Harga pertanian berubah karena interaksi antara pasokan, permintaan, musim, distribusi, kualitas, biaya produksi, dan kondisi pasar.",
+            [
+                ["📈 Pasokan", "Ketika produksi banyak sementara permintaan relatif tetap, harga dapat tertekan. Sebaliknya, pasokan yang terbatas dapat mendorong harga naik."],
+                ["🛒 Permintaan", "Perubahan kebutuhan konsumen, industri, atau pasar tertentu dapat memengaruhi harga."],
+                ["🌧️ Musim & cuaca", "Cuaca ekstrem dapat mengurangi produksi atau mengganggu distribusi sehingga memengaruhi harga."],
+                ["🚚 Distribusi", "Biaya transportasi, jarak pasar, dan kondisi logistik memengaruhi harga yang diterima petani."],
+                ["⭐ Kualitas", "Ukuran, tingkat kematangan, kebersihan, dan kondisi hasil dapat memengaruhi harga jual."],
+                ["💡 Strategi petani", "Pencatatan biaya produksi dan survei beberapa saluran pemasaran membantu menentukan keputusan penjualan."]
+            ],
+            "Jika kamu menanyakan harga terkini, data harga perlu diambil dari sumber pasar yang diperbarui karena harga berubah dari waktu ke waktu."
+        );
+    }
 
+    /* TANAMAN SPESIFIK */
+    if(q.includes("padi") || q.includes("beras")){
+        return answer(
+            "🌾 Panduan Dasar Budidaya Padi",
+            "Budidaya padi membutuhkan pengelolaan varietas, persemaian, air, nutrisi, gulma, hama, penyakit, dan waktu panen secara terpadu.",
+            [
+                ["🌱 Awal tanam", "Gunakan benih sehat dan atur persemaian dengan baik. Bibit perlu dipindahkan pada kondisi dan umur yang sesuai sistem budidaya."],
+                ["💧 Air", "Pengelolaan air perlu mengikuti fase tanaman dan kondisi lahan. Hindari genangan atau kekeringan yang tidak sesuai kebutuhan."],
+                ["🧪 Nutrisi", "Padi membutuhkan unsur hara makro dan mikro. Pemupukan sebaiknya mengikuti kondisi lahan dan rekomendasi setempat."],
+                ["🐛 Hama", "Pantau wereng, penggerek batang, dan organisme pengganggu lain sesuai kondisi lapangan."],
+                ["🦠 Penyakit", "Perhatikan perubahan warna, bercak, busuk, atau gejala khas pada daun dan malai."],
+                ["🌾 Panen", "Gunakan warna dan kondisi gabah/malai serta umur varietas sebagai indikator bersama untuk menentukan waktu panen."]
+            ],
+            "Sebutkan umur padi dan masalah yang sedang terjadi jika ingin diagnosis lebih spesifik."
+        );
     }
 
     if(q.includes("jagung")){
-
-        return `
-        🌽 <b>Jagung</b> membutuhkan cahaya matahari
-        yang cukup serta ketersediaan air dan nutrisi
-        yang sesuai.
-
-        <br><br>
-
-        Perhatikan juga gulma dan hama selama masa pertumbuhan.
-        `;
-
+        return answer(
+            "🌽 Panduan Dasar Budidaya Jagung",
+            "Jagung membutuhkan benih yang baik, tanah dengan drainase memadai, nutrisi seimbang, pengelolaan air, serta pengawasan hama dan penyakit.",
+            [
+                ["🌱 Penanaman", "Gunakan benih sehat dan atur jarak tanam sesuai varietas serta sistem budidaya."],
+                ["💧 Air", "Jaga kelembapan terutama pada fase kritis pertumbuhan dan pembentukan hasil, tanpa membuat tanah tergenang."],
+                ["🧪 Nutrisi", "Nitrogen, fosfor, kalium, dan unsur lain dibutuhkan dalam jumlah berbeda sepanjang pertumbuhan."],
+                ["🐛 Hama", "Periksa pucuk, daun, dan tongkol secara rutin untuk mendeteksi serangan lebih awal."],
+                ["🌽 Panen", "Tanda kematangan berbeda untuk jagung konsumsi segar dan jagung biji, sehingga tujuan panen perlu diperjelas."]
+            ],
+            "Sebutkan apakah jagungmu untuk konsumsi muda atau untuk biji agar panduannya lebih tepat."
+        );
     }
 
     if(q.includes("cabai")){
-
-        return `
-        🌶️ <b>Cabai</b> membutuhkan drainase yang baik,
-        cahaya cukup, air yang teratur, dan nutrisi seimbang.
-
-        <br><br>
-
-        Periksa tanaman secara rutin untuk mengetahui
-        adanya hama atau perubahan kondisi daun.
-        `;
-
+        return answer(
+            "🌶️ Panduan Dasar Budidaya Cabai",
+            "Cabai membutuhkan drainase baik, penyiraman stabil, nutrisi seimbang, dan pengawasan ketat terhadap hama serta penyakit.",
+            [
+                ["🌱 Bibit", "Gunakan bibit sehat dan hindari media yang terlalu basah."],
+                ["💧 Penyiraman", "Jaga kelembapan tanah tetap stabil dan sesuaikan dengan cuaca serta fase tanaman."],
+                ["🧪 Nutrisi", "Pemupukan harus seimbang dan disesuaikan fase vegetatif, berbunga, serta berbuah."],
+                ["🐛 Hama", "Kutu daun, trips, tungau, dan beberapa hama lain dapat menyebabkan keriting, perubahan warna, atau kerusakan buah."],
+                ["🦠 Penyakit", "Perhatikan bercak daun, busuk buah, layu, dan gejala lain. Sanitasi dan pengelolaan kelembapan penting."],
+                ["🌶️ Panen", "Tingkat kematangan dipilih berdasarkan kebutuhan pasar dan tujuan penggunaan."]
+            ],
+            "Jika daun cabai keriting, menguning, atau buah busuk, jelaskan gejalanya agar penyebabnya bisa dipersempit."
+        );
     }
 
-    return `
-    🤖 Saya bisa membantu menjelaskan berbagai topik
-    seputar pertanian.
+    if(q.includes("tomat")){
+        return answer(
+            "🍅 Panduan Dasar Budidaya Tomat",
+            "Tomat membutuhkan media dengan drainase baik, cahaya cukup, nutrisi seimbang, serta pengelolaan air yang konsisten.",
+            [
+                ["🌱 Penanaman", "Gunakan bibit sehat dan berikan ruang tumbuh serta penyangga sesuai tipe tanaman."],
+                ["💧 Air", "Hindari perubahan kelembapan yang terlalu ekstrem dan genangan berkepanjangan."],
+                ["🧪 Nutrisi", "Kebutuhan nutrisi berubah sepanjang pertumbuhan. Hindari pemupukan berlebihan tanpa mengetahui kebutuhan tanaman."],
+                ["🐛 Hama", "Periksa pucuk dan bagian bawah daun secara rutin."],
+                ["🦠 Penyakit", "Kelembapan tinggi dan daun yang lama basah dapat meningkatkan risiko beberapa penyakit."],
+                ["🍅 Panen", "Tentukan tingkat kematangan berdasarkan kebutuhan konsumsi atau tujuan distribusi."]
+            ],
+            "Jika tomatmu mengalami daun keriting, bercak, atau buah pecah/busuk, jelaskan gejalanya."
+        );
+    }
 
-    <br><br>
+    if(q.includes("tembakau")){
+        return answer(
+            "🌿 Panduan Dasar Budidaya Tembakau",
+            "Tembakau membutuhkan pengelolaan persemaian, tanah, air, nutrisi, hama, penyakit, dan waktu panen yang disesuaikan dengan varietas serta tujuan produksi.",
+            [
+                ["🌱 Persemaian", "Gunakan bibit sehat dan media yang memiliki drainase baik. Hindari kondisi terlalu basah."],
+                ["🌱 Pertumbuhan", "Pantau pertumbuhan daun dan kondisi tanaman secara rutin. Kebutuhan air dan nutrisi perlu disesuaikan dengan fase."],
+                ["💧 Air", "Kelebihan maupun kekurangan air dapat mengganggu pertumbuhan dan kualitas tanaman."],
+                ["🐛 Hama & penyakit", "Periksa daun secara berkala untuk menemukan gejala sedini mungkin."],
+                ["🍃 Panen", "Waktu panen daun perlu disesuaikan dengan varietas dan tingkat kematangan yang diinginkan."]
+            ],
+            "Jika kamu menyebutkan umur tembakau dan gejala pada daun, saya bisa membantu membuat diagnosis awal."
+        );
+    }
 
-    Coba tanyakan misalnya:
+    /* PERAWATAN UMUM */
+    if(hasAny(q,["merawat tanaman","perawatan tanaman","agar tanaman subur","tanaman sehat","tips bertani","cara merawat"])){
+        return answer(
+            "🌱 Prinsip Perawatan Tanaman Sehat",
+            "Tanaman sehat biasanya merupakan hasil dari pengelolaan yang seimbang, bukan hanya pemberian pupuk sebanyak mungkin.",
+            [
+                ["1. Kenali tanaman", "Ketahui kebutuhan cahaya, air, nutrisi, jarak tanam, dan fase pertumbuhannya."],
+                ["2. Periksa rutin", "Amati daun, batang, akar, tanah, dan buah secara berkala."],
+                ["3. Kelola air", "Sesuaikan penyiraman dengan kelembapan tanah dan cuaca."],
+                ["4. Kelola nutrisi", "Berikan nutrisi sesuai kebutuhan dan hindari pemupukan berlebihan."],
+                ["5. Jaga sanitasi", "Kurangi sumber penyakit dan tempat berkembangnya hama."],
+                ["6. Catat aktivitas", "Catatan budidaya membantu mengetahui hubungan antara perlakuan dan respons tanaman."]
+            ],
+            "Kalau ada masalah tertentu, jangan hanya tulis 'tanaman saya rusak'. Sebutkan gejala agar analisisnya lebih akurat."
+        );
+    }
 
-    <br>
+    /* TERIMA KASIH / PENUTUP */
+    if(hasAny(q,["terima kasih","makasih","thanks","oke","baik","sip"])){
+        return answer(
+            "😊 Sama-sama!",
+            "Senang bisa membantu. EcoAI siap menemani kamu memahami masalah pertanian langkah demi langkah.",
+            [
+                ["🌱 Jika ada masalah tanaman", "Sebutkan tanaman, umur, gejala, kondisi tanah, dan cuaca."],
+                ["📷 Jika ada gejala visual", "Foto tanaman dapat membantu memperjelas bentuk bercak, hama, perubahan warna, atau kondisi daun."],
+                ["💡 Jika ingin belajar", "Kamu bisa meminta penjelasan dari dasar sampai langkah praktik."]
+            ]
+        );
+    }
 
-    • Mengapa daun tanaman menguning?<br>
-    • Bagaimana membuat kompos?<br>
-    • Kapan padi bisa dipanen?<br>
-    • Bagaimana cara mengatur penyiraman?<br>
-    • Apa fungsi pupuk NPK?<br>
-    • Bagaimana mengatasi hama tanaman?<br>
-    • Berapa harga komoditas?<br>
-    • Apa fungsi pupuk Urea?<br>
-    • Bagaimana cara merawat tembakau?<br>
-    • Kapan tembakau bisa dipanen?
-    `;
+    /* FALLBACK CERDAS */
+    return answer(
+        "🤖 EcoAI — Mari kita analisis pertanyaanmu",
+        `Saya belum mendapatkan konteks yang cukup untuk memberikan jawaban yang benar-benar spesifik tentang <b>${escapeEcoAI(question)}</b>. Saya tetap bisa membantu menganalisisnya.`,
+        [
+            ["🔎 1. Tentukan masalah utama", "Jelaskan apakah pertanyaannya berkaitan dengan tanaman, tanah, pupuk, air, hama, penyakit, panen, limbah, Eco Coin, atau fitur EcoFarming."],
+            ["🌱 2. Berikan konteks", "Untuk pertanian, tuliskan nama tanaman, umur/fase tanaman, lokasi/lahan secara umum, kondisi tanah, cuaca, dan gejala yang terlihat."],
+            ["👀 3. Jelaskan gejala", "Sebutkan kapan masalah mulai muncul, bagian tanaman yang terdampak, apakah menyebar, dan perubahan apa yang terlihat."],
+            ["🛠️ 4. Hindari tindakan terburu-buru", "Jangan langsung menambah banyak pupuk atau pestisida sebelum penyebab masalah dipahami. Tindakan yang salah dapat memperparah masalah."],
+            ["💬 5. Contoh pertanyaan", "Kamu bisa bertanya: 'Kenapa daun cabai saya keriting dan ada serangga kecil?', 'Bagaimana membuat kompos?', 'Berapa sering tanaman disiram?', atau 'Apa perbedaan pupuk NPK dan urea?'."]
+        ],
+        "Jika kamu memberikan detail tersebut, saya akan menyusun jawaban dalam format penyebab → pemeriksaan → langkah penanganan → pencegahan."
+    );
+}
 
+async function getAIResponse(question){
+    const serverAnswer = await askEcoAIToServer(question);
+
+    if(serverAnswer){
+        return serverAnswer;
+    }
+
+    return getLocalEcoAIResponse(question);
+}
+
+/* sendAI diperbarui agar mendukung jawaban async */
+async function sendAI(){
+    const input = document.getElementById("aiInput");
+    const question = input.value.trim();
+
+    if(!question) return;
+
+    addMessage(escapeEcoAI(question),"user");
+    input.value = "";
+
+    const loadingId = "ecoai-loading-" + Date.now();
+
+    addMessage(
+        `<span id="${loadingId}">🤖 EcoAI sedang berpikir...</span>`,
+        "ai"
+    );
+
+    try{
+        const answer = await getAIResponse(question);
+
+        const loading = document.getElementById(loadingId);
+
+        if(loading){
+            loading.innerHTML = answer;
+        }else{
+            addMessage(answer,"ai");
+        }
+    }catch(error){
+        console.error(error);
+
+        const loading = document.getElementById(loadingId);
+
+        const fallback = `
+        ⚠️ Maaf, terjadi gangguan saat memproses pertanyaan.
+        <br><br>
+        Silakan coba lagi dengan kalimat yang lebih singkat
+        atau tambahkan nama tanaman dan masalahnya.
+        `;
+
+        if(loading){
+            loading.innerHTML = fallback;
+        }else{
+            addMessage(fallback,"ai");
+        }
+    }
+
+    user.aiUsed = true;
+    user.achievements = Math.max(user.achievements,4);
+
+    saveUser();
+    updateDashboard();
 }
 
 
